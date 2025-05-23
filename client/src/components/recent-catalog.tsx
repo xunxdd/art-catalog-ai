@@ -1,0 +1,101 @@
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import type { Artwork } from "@shared/schema";
+
+interface RecentCatalogProps {
+  onSelectArtwork?: (artwork: Artwork) => void;
+  onViewAll?: () => void;
+}
+
+export function RecentCatalog({ onSelectArtwork, onViewAll }: RecentCatalogProps) {
+  const { data: artworks, isLoading } = useQuery<Artwork[]>({
+    queryKey: ['/api/artworks/recent'],
+  });
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold">Recent Catalog Items</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-square bg-muted rounded-lg mb-3"></div>
+                <div className="h-4 bg-muted rounded mb-2"></div>
+                <div className="h-3 bg-muted rounded mb-2 w-3/4"></div>
+                <div className="flex justify-between items-center">
+                  <div className="h-3 bg-muted rounded w-1/4"></div>
+                  <div className="h-3 bg-muted rounded w-1/4"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!artworks || artworks.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-semibold">Recent Catalog Items</h3>
+          </div>
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No artworks in catalog yet.</p>
+            <p className="text-sm text-muted-foreground mt-2">Upload your first artwork to get started!</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold">Recent Catalog Items</h3>
+          <Button variant="ghost" onClick={onViewAll} className="text-primary hover:text-primary/80">
+            View All →
+          </Button>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {artworks.map((artwork) => (
+            <div
+              key={artwork.id}
+              className="group cursor-pointer"
+              onClick={() => onSelectArtwork?.(artwork)}
+            >
+              <div className="aspect-square rounded-lg overflow-hidden mb-3">
+                <img
+                  src={getImageUrl(artwork.thumbnailUrl || artwork.imageUrl)}
+                  alt={artwork.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                />
+              </div>
+              <h4 className="font-semibold mb-1 truncate">{artwork.title}</h4>
+              <p className="text-sm text-muted-foreground mb-2">
+                {artwork.medium} {artwork.dimensions && `• ${artwork.dimensions}`}
+              </p>
+              <div className="flex justify-between items-center">
+                <span className="text-green-600 font-semibold">
+                  {artwork.suggestedPrice ? formatPrice(artwork.suggestedPrice) : 'Analyzing...'}
+                </span>
+                <Badge className={getStatusColor(artwork.aiAnalysisComplete ? 'listed' : 'analyzing')}>
+                  {artwork.aiAnalysisComplete ? 'Analyzed' : 'Processing'}
+                </Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
