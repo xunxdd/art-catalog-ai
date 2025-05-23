@@ -142,8 +142,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .catch(async (error) => {
           console.error("AI analysis failed:", error);
           await storage.updateArtwork(initialArtwork.id, {
-            title: "Artwork",
-            description: "Analysis failed - please edit manually",
+            title: "Analysis Failed",
+            description: error.message.includes('quota') 
+              ? "OpenAI quota exceeded - please check billing" 
+              : "AI analysis failed - please try again",
             aiAnalysisComplete: false,
           });
         });
@@ -229,6 +231,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Description generation error:", error);
       res.status(500).json({ message: "Failed to generate description" });
+    }
+  });
+
+  // Re-analyze artwork
+  app.post("/api/artworks/:id/analyze", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const artwork = await storage.getArtwork(id);
+      
+      if (!artwork) {
+        return res.status(404).json({ message: "Artwork not found" });
+      }
+
+      // Update to analyzing state
+      await storage.updateArtwork(id, {
+        title: "Re-analyzing...",
+        aiAnalysisComplete: false,
+      });
+
+      // Extract base64 from data URL
+      const base64Match = artwork.imageUrl.match(/^data:image\/[a-zA-Z]+;base64,(.+)$/);
+      if (!base64Match) {
+        return res.status(400).json({ message: "Invalid image format" });
+      }
+      
+      const base64Image = base64Match[1];
+
+      // Start AI analysis
+      analyzeArtworkImage(base64Image)
+        .then(async (analysis) => {
+          const tags = [
+            ...analysis.style,
+            ...analysis.themes,
+            ...analysis.colors
+          ].filter(Boolean);
+
+          await storage.updateArtwork(id, {
+            title: analysis.title,
+            artist: analysis.artist,
+            medium: analysis.medium,
+            year: analysis.estimatedYear,
+            condition: analysis.condition,
+            description: analysis.description,
+            suggestedPrice: Math.round(analysis.suggestedPrice * 100),
+            tags,
+            aiAnalysisComplete: true,
+            analysisData: analysis,
+          });
+        })
+        .catch(async (error) => {
+          console.error("Re-analysis failed:", error);
+          await storage.updateArtwork(id, {
+            title: "Re-analysis Failed",
+            description: error.message.includes('quota') 
+              ? "OpenAI quota exceeded - please check billing" 
+              : "AI analysis failed - please try again",
+            aiAnalysisComplete: false,
+          });
+        });
+
+      res.json({ message: "Re-analysis started" });
+    } catch (error) {
+      console.error("Re-analysis error:", error);
+      res.status(500).json({ message: "Failed to start re-analysis" });
     }
   });
 

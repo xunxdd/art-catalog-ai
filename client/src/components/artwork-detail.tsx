@@ -1,8 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Expand, Heart, Store, Edit, Share, CheckCircle } from "lucide-react";
+import { Expand, Heart, Store, Edit, Share, CheckCircle, RefreshCw } from "lucide-react";
 import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Artwork } from "@shared/schema";
 
 interface ArtworkDetailProps {
@@ -13,6 +16,30 @@ interface ArtworkDetailProps {
 }
 
 export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: ArtworkDetailProps) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const reAnalyzeMutation = useMutation({
+    mutationFn: async (artworkId: number) => {
+      const response = await apiRequest('POST', `/api/artworks/${artworkId}/analyze`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Re-analysis started",
+        description: "AI is analyzing your artwork again...",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/artworks'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Re-analysis failed",
+        description: error.message || "Failed to restart analysis",
+        variant: "destructive",
+      });
+    },
+  });
+
   if (!artwork) {
     return (
       <Card className="lg:col-span-2">
@@ -25,6 +52,7 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: Art
 
   const tags = artwork.tags || [];
   const styleThemeTags = tags.slice(0, 5); // Show first 5 tags
+  const analysisFailedOrIncomplete = !artwork.aiAnalysisComplete || artwork.title.includes("Failed");
 
   return (
     <Card className="lg:col-span-2 overflow-hidden">
@@ -58,6 +86,22 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: Art
             )}
           </Badge>
         </div>
+
+        {/* Re-analyze Button for Failed Analysis */}
+        {analysisFailedOrIncomplete && (
+          <div className="absolute bottom-4 right-4">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => reAnalyzeMutation.mutate(artwork.id)}
+              disabled={reAnalyzeMutation.isPending}
+              className="bg-black/50 hover:bg-black/70 text-white"
+            >
+              <RefreshCw className={`mr-2 h-3 w-3 ${reAnalyzeMutation.isPending ? 'animate-spin' : ''}`} />
+              {reAnalyzeMutation.isPending ? 'Re-analyzing...' : 'Re-analyze'}
+            </Button>
+          </div>
+        )}
       </div>
       
       {/* Artwork Details */}
