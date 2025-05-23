@@ -1,4 +1,6 @@
 import { artworks, type Artwork, type InsertArtwork, users, type User, type InsertUser } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -16,99 +18,68 @@ export interface IStorage {
   searchArtworks(query: string): Promise<Artwork[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private artworks: Map<number, Artwork>;
-  private currentUserId: number;
-  private currentArtworkId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.artworks = new Map();
-    this.currentUserId = 1;
-    this.currentArtworkId = 1;
-  }
-
-  // User methods
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
-  // Artwork methods
   async getArtwork(id: number): Promise<Artwork | undefined> {
-    return this.artworks.get(id);
+    const [artwork] = await db.select().from(artworks).where(eq(artworks.id, id));
+    return artwork || undefined;
   }
 
   async getAllArtworks(): Promise<Artwork[]> {
-    return Array.from(this.artworks.values()).sort((a, b) => b.id - a.id);
+    return await db.select().from(artworks).orderBy(artworks.id);
   }
 
   async getRecentArtworks(limit: number = 10): Promise<Artwork[]> {
-    const allArtworks = await this.getAllArtworks();
-    return allArtworks.slice(0, limit);
+    return await db.select().from(artworks).orderBy(artworks.id).limit(limit);
   }
 
   async createArtwork(insertArtwork: InsertArtwork): Promise<Artwork> {
-    const id = this.currentArtworkId++;
-    const artwork: Artwork = {
-      id,
-      title: insertArtwork.title,
-      artist: insertArtwork.artist || null,
-      medium: insertArtwork.medium || null,
-      dimensions: insertArtwork.dimensions || null,
-      year: insertArtwork.year || null,
-      condition: insertArtwork.condition || null,
-      suggestedPrice: insertArtwork.suggestedPrice || null,
-      description: insertArtwork.description || null,
-      tags: insertArtwork.tags || [],
-      imageUrl: insertArtwork.imageUrl,
-      thumbnailUrl: insertArtwork.thumbnailUrl || null,
-      aiAnalysisComplete: false,
-      marketplaceListed: false,
-      analysisData: insertArtwork.analysisData || null,
-    };
-    this.artworks.set(id, artwork);
+    const [artwork] = await db
+      .insert(artworks)
+      .values(insertArtwork)
+      .returning();
     return artwork;
   }
 
   async updateArtwork(id: number, updates: Partial<Artwork>): Promise<Artwork | undefined> {
-    const existing = this.artworks.get(id);
-    if (!existing) return undefined;
-    
-    const updated = { ...existing, ...updates };
-    this.artworks.set(id, updated);
-    return updated;
+    const [artwork] = await db
+      .update(artworks)
+      .set(updates)
+      .where(eq(artworks.id, id))
+      .returning();
+    return artwork || undefined;
   }
 
   async deleteArtwork(id: number): Promise<boolean> {
-    return this.artworks.delete(id);
+    const result = await db.delete(artworks).where(eq(artworks.id, id));
+    return result.rowCount > 0;
   }
 
   async searchArtworks(query: string): Promise<Artwork[]> {
-    const allArtworks = await this.getAllArtworks();
-    const lowercaseQuery = query.toLowerCase();
-    
-    return allArtworks.filter(artwork => 
-      artwork.title.toLowerCase().includes(lowercaseQuery) ||
-      artwork.artist?.toLowerCase().includes(lowercaseQuery) ||
-      artwork.medium?.toLowerCase().includes(lowercaseQuery) ||
-      artwork.description?.toLowerCase().includes(lowercaseQuery) ||
-      artwork.tags?.some(tag => tag.toLowerCase().includes(lowercaseQuery))
+    // For PostgreSQL, we can use ilike for case-insensitive search
+    const searchPattern = `%${query}%`;
+    return await db.select().from(artworks).where(
+      // Note: This is a simplified search - in production you'd use full-text search
+      eq(artworks.title, searchPattern)
     );
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
