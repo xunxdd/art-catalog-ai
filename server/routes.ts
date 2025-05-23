@@ -197,6 +197,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Re-analyze artwork
+  app.post("/api/artworks/:id/analyze", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const artwork = await storage.getArtwork(id);
+      
+      if (!artwork) {
+        return res.status(404).json({ message: "Artwork not found" });
+      }
+
+      if (!artwork.imageUrl) {
+        return res.status(400).json({ message: "No image available for analysis" });
+      }
+
+      // Extract base64 from data URL
+      const base64Match = artwork.imageUrl.match(/^data:image\/[a-zA-Z]+;base64,(.+)$/);
+      if (!base64Match) {
+        return res.status(400).json({ message: "Invalid image format" });
+      }
+
+      const base64Image = base64Match[1];
+      
+      try {
+        const analysis = await analyzeArtworkImage(base64Image);
+        
+        const updatedArtwork = await storage.updateArtwork(id, {
+          title: analysis.title,
+          artist: analysis.artist || undefined,
+          medium: analysis.medium,
+          description: analysis.description,
+          tags: [...analysis.style, ...analysis.themes, ...analysis.colors],
+          suggestedPrice: Math.round(analysis.suggestedPrice * 100), // Convert to cents
+          analysisData: analysis,
+          aiAnalysisComplete: true,
+        });
+
+        res.json(updatedArtwork);
+      } catch (error) {
+        console.error("AI analysis failed:", error);
+        const updatedArtwork = await storage.updateArtwork(id, {
+          title: "Analysis Failed",
+          description: error.message.includes('quota') 
+            ? "OpenAI quota exceeded - please check billing" 
+            : "AI analysis failed - please try again",
+          aiAnalysisComplete: false,
+        });
+        res.json(updatedArtwork);
+      }
+    } catch (error) {
+      console.error("Re-analyze error:", error);
+      res.status(500).json({ message: "Failed to re-analyze artwork" });
+    }
+  });
+
   // Generate new description for artwork
   app.post("/api/artworks/:id/description", async (req, res) => {
     try {
