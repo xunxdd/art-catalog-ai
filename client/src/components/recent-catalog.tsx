@@ -73,12 +73,19 @@ export function RecentCatalog({ onSelectArtwork, onViewAll }: RecentCatalogProps
               className="group cursor-pointer"
               onClick={() => onSelectArtwork?.(artwork)}
             >
-              <div className="aspect-square rounded-lg overflow-hidden mb-3">
+              <div className="aspect-square rounded-lg overflow-hidden mb-3 bg-muted">
                 <img
                   src={getImageUrl(artwork.thumbnailUrl || artwork.imageUrl)}
                   alt={artwork.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                  }}
                 />
+                <div className="hidden w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+                  {artwork.title}
+                </div>
               </div>
               <h4 className="font-semibold mb-1 truncate">{artwork.title}</h4>
               <p className="text-sm text-muted-foreground mb-2">
