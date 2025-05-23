@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavigationHeader } from "@/components/navigation-header";
 import { ArtworkUpload } from "@/components/artwork-upload";
 import { QuickActions } from "@/components/quick-actions";
@@ -7,10 +7,24 @@ import { RecentCatalog } from "@/components/recent-catalog";
 import { Button } from "@/components/ui/button";
 import { Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import type { Artwork } from "@shared/schema";
 
 export default function Catalog() {
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
+  const { data: artworks } = useQuery<Artwork[]>({
+    queryKey: ['/api/artworks/recent'],
+  });
+
+  // Auto-select first artwork when data loads
+  useEffect(() => {
+    if (artworks && artworks.length > 0 && !selectedArtwork) {
+      // Prioritize user uploads over sample artwork
+      const userArtwork = artworks.find(art => art.artist !== 'Vincent van Gogh');
+      const firstArtwork = userArtwork || artworks[0];
+      setSelectedArtwork(firstArtwork);
+    }
+  }, [artworks, selectedArtwork]);
   const { toast } = useToast();
 
   const handleSelectArtwork = (artwork: Artwork) => {

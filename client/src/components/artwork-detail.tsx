@@ -65,6 +65,11 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: Art
         />
         
         <div className="absolute top-4 right-4 flex space-x-2">
+          {artwork.artist === 'Vincent van Gogh' && (
+            <div className="bg-black/70 text-white px-3 py-1 rounded-md text-sm font-medium backdrop-blur-sm mr-2">
+              SAMPLE
+            </div>
+          )}
           <Button size="icon" variant="secondary" className="bg-black/50 hover:bg-black/70 text-white">
             <Expand className="h-4 w-4" />
           </Button>

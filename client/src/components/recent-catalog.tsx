@@ -73,7 +73,7 @@ export function RecentCatalog({ onSelectArtwork, onViewAll }: RecentCatalogProps
               className="group cursor-pointer"
               onClick={() => onSelectArtwork?.(artwork)}
             >
-              <div className="aspect-square rounded-lg overflow-hidden mb-3 bg-muted">
+              <div className="aspect-square rounded-lg overflow-hidden mb-3 bg-muted relative">
                 <img
                   src={getImageUrl(artwork.thumbnailUrl || artwork.imageUrl)}
                   alt={artwork.title}
@@ -83,6 +83,11 @@ export function RecentCatalog({ onSelectArtwork, onViewAll }: RecentCatalogProps
                     e.currentTarget.nextElementSibling?.classList.remove('hidden');
                   }}
                 />
+                {artwork.artist === 'Vincent van Gogh' && (
+                  <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium backdrop-blur-sm">
+                    SAMPLE
+                  </div>
+                )}
                 <div className="hidden w-full h-full flex items-center justify-center text-muted-foreground text-sm">
                   {artwork.title}
                 </div>
