@@ -29,7 +29,16 @@ export function RecentCatalog({ onSelectArtwork, onViewAll }: RecentCatalogProps
       <Card>
         <CardContent className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold">Recent Catalog Items</h3>
+            <div>
+              <h3 className="text-lg font-semibold">
+                {showingSamples ? "Sample Artwork Collection" : "Your Recent Artworks"}
+              </h3>
+              {showingSamples && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Upload your first artwork to start building your personal catalog
+                </p>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...Array(3)].map((_, i) => (
