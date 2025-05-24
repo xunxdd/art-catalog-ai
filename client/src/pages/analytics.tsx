@@ -8,7 +8,7 @@ import type { Artwork } from "@shared/schema";
 
 export default function Analytics() {
   const { data: artworks } = useQuery<Artwork[]>({
-    queryKey: ['/api/artworks'],
+    queryKey: ['/api/user/artworks'],
   });
 
   const totalArtworks = artworks?.length || 0;
