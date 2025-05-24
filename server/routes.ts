@@ -248,10 +248,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Upload error:", error);
       res.status(500).json({ message: "Failed to upload and analyze artwork" });
     }
-    // Check authentication BEFORE multer processing
-    if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
 
     // Now handle the file upload
     upload.single('image')(req, res, async (err) => {
