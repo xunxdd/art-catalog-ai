@@ -76,17 +76,27 @@ export default function Marketplace() {
         {/* Marketplace Platforms */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {marketplaces.map((marketplace) => (
-            <Card key={marketplace.name} className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card 
+              key={marketplace.name} 
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => handleConnectPlatform(marketplace.name)}
+            >
               <CardHeader className="text-center">
                 <marketplace.icon className={`h-12 w-12 mx-auto ${marketplace.color} mb-2`} />
                 <CardTitle className="text-lg">{marketplace.name}</CardTitle>
                 <p className="text-sm text-muted-foreground">{marketplace.description}</p>
               </CardHeader>
               <CardContent className="text-center">
+                <div className="text-xs text-muted-foreground mb-2">
+                  Click to visit platform
+                </div>
                 <Button 
                   variant="outline" 
                   className="w-full"
-                  onClick={() => handleConnectPlatform(marketplace.name)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleConnectPlatform(marketplace.name);
+                  }}
                 >
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Connect Platform
