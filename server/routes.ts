@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertArtworkSchema } from "@shared/schema";
+import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
 import { analyzeArtworkImage, generateArtworkDescription, suggestArtworkPrice } from "./openai";
 import multer from "multer";
 import sharp from "sharp";
@@ -29,8 +30,42 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
-  // Get all artworks
+  // Setup authentication
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Admin analytics routes
+  app.get('/api/admin/stats', isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const [userStats, artworkStats, userAnalytics] = await Promise.all([
+        storage.getUserStats(),
+        storage.getArtworkStats(),
+        storage.getUserAnalytics(),
+      ]);
+      
+      res.json({
+        userStats,
+        artworkStats,
+        userAnalytics,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch admin analytics" });
+    }
+  });
+
+  // Get all artworks (admin only)
   app.get("/api/artworks", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const artworks = await storage.getAllArtworks();
