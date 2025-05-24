@@ -154,8 +154,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload and analyze artwork (authenticated users only)
-  app.post("/api/artworks/upload", isAuthenticated, upload.single('image'), async (req: MulterRequest & any, res) => {
+  app.post("/api/artworks/upload", upload.single('image'), async (req: MulterRequest & any, res) => {
     try {
+      // Check authentication
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
       if (!req.file) {
         return res.status(400).json({ message: "No image file provided" });
       }
@@ -176,8 +181,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const imageUrl = `data:image/jpeg;base64,${base64Image}`;
       const thumbnailUrl = `data:image/jpeg;base64,${thumbnailBuffer.toString('base64')}`;
 
-      // Create initial artwork record
-      const userId = req.user.claims.sub;
+      // Create initial artwork record - handle both auth types
+      const userId = req.user?.id || req.user?.claims?.sub;
       const initialArtwork = await storage.createArtwork({
         title: "Analyzing...",
         imageUrl,
