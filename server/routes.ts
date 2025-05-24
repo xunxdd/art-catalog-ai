@@ -155,11 +155,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Upload and analyze artwork (authenticated users only)
   app.post("/api/artworks/upload", upload.single('image'), async (req: MulterRequest & any, res) => {
+    console.log('=== UPLOAD DEBUG ===');
+    console.log('Session ID:', req.sessionID);
+    console.log('Session exists:', !!req.session);
+    console.log('User exists:', !!req.user);
+    console.log('isAuthenticated exists:', typeof req.isAuthenticated);
+    console.log('isAuthenticated result:', req.isAuthenticated?.());
+    console.log('User object:', req.user);
+    console.log('===================');
+    
     try {
-      console.log('Upload attempt - isAuthenticated:', req.isAuthenticated?.());
-      console.log('Upload attempt - user:', req.user ? 'User exists' : 'No user');
-      console.log('Upload attempt - session:', req.session ? 'Session exists' : 'No session');
-      
       // Check authentication - handle both auth methods
       if (!req.isAuthenticated?.() || !req.user) {
         console.log('Upload rejected: not authenticated');
