@@ -176,7 +176,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload and analyze artwork (authenticated users only)
-  app.post("/api/artworks/upload", async (req: MulterRequest & any, res) => {
+  app.post("/api/artworks/upload", upload.single('image'), async (req: MulterRequest & any, res) => {
+    try {
+      // Use exact same auth check as /api/auth/user endpoint
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      let userId;
+      if (req.user?.claims?.sub) {
+        userId = req.user.claims.sub;
+      } else if (req.user?.id) {
+        userId = req.user.id;  
+      } else {
+        return res.status(401).json({ message: "Invalid user session" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      // Process and create artwork with AI analysis
+      const imageBuffer = req.file.buffer;
+      const thumbnailBuffer = await sharp(imageBuffer).resize(400, 400, { fit: 'cover' }).jpeg({ quality: 80 }).toBuffer();
+      const base64Image = imageBuffer.toString('base64');
+      const imageUrl = `data:image/jpeg;base64,${base64Image}`;
+      const thumbnailUrl = `data:image/jpeg;base64,${thumbnailBuffer.toString('base64')}`;
+
+      const initialArtwork = await storage.createArtwork({
+        title: "Analyzing...",
+        imageUrl,
+        thumbnailUrl,
+        medium: "",
+        description: "",
+        tags: [],
+        suggestedPrice: 0,
+        analysisData: null,
+        userId,
+      });
+
+      // Background AI analysis
+      analyzeArtworkImage(base64Image).then(async (analysis) => {
+        const tags = [...analysis.style, ...analysis.themes, ...analysis.colors].filter(Boolean);
+        await storage.updateArtwork(initialArtwork.id, {
+          title: analysis.title,
+          artist: analysis.artist,
+          medium: analysis.medium,
+          year: analysis.estimatedYear,
+          condition: analysis.condition,
+          description: analysis.description,
+          suggestedPrice: Math.round(analysis.suggestedPrice * 100),
+          tags,
+          aiAnalysisComplete: true,
+          analysisData: analysis,
+        });
+      }).catch(async (error) => {
+        console.error("AI analysis failed:", error);
+        await storage.updateArtwork(initialArtwork.id, {
+          title: "Analysis Failed",
+          description: "AI analysis could not be completed for this artwork.",
+          aiAnalysisComplete: false,
+        });
+      });
+
+      res.status(201).json({ 
+        id: initialArtwork.id,
+        title: initialArtwork.title,
+        imageUrl: initialArtwork.imageUrl 
+      });
+    } catch (error) {
+      console.error("Upload error:", error);
+      res.status(500).json({ message: "Failed to upload and analyze artwork" });
+    }
     // Check authentication BEFORE multer processing
     if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -210,7 +281,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const imageUrl = `data:image/jpeg;base64,${base64Image}`;
       const thumbnailUrl = `data:image/jpeg;base64,${thumbnailBuffer.toString('base64')}`;
 
-      // Create initial artwork record - handle both auth types
+      // Create initial artwork record
       const userId = req.user?.id || req.user?.claims?.sub;
       const initialArtwork = await storage.createArtwork({
         title: "Analyzing...",
