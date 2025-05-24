@@ -32,6 +32,7 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
       const response = await fetch(endpoint, {
         method: 'POST',
+        credentials: 'include', // Include cookies for session management
         headers: {
           'Content-Type': 'application/json',
         },
