@@ -11,17 +11,49 @@ import type { Artwork } from "@shared/schema";
 export default function Marketplace() {
   const { toast } = useToast();
   const { data: artworks } = useQuery<Artwork[]>({
-    queryKey: ['/api/artworks'],
+    queryKey: ['/api/user/artworks'],
   });
+
+  const handleConnectPlatform = (platformName: string) => {
+    const platformUrls = {
+      "Etsy": "https://www.etsy.com/sell",
+      "Saatchi Art": "https://www.saatchiart.com/artists/apply",
+      "eBay": "https://www.ebay.com/sl/sell",
+      "Your Website": "/catalog" // Stay in app for direct sales
+    };
+    
+    const url = platformUrls[platformName as keyof typeof platformUrls];
+    
+    if (platformName === "Your Website") {
+      // Stay in our app for direct sales setup
+      toast({
+        title: "Direct Sales Platform",
+        description: "Setting up your personal sales page...",
+      });
+      window.location.href = url;
+    } else {
+      // Open external marketplace in new tab
+      toast({
+        title: `Connecting to ${platformName}`,
+        description: "Opening platform registration page in new tab...",
+      });
+      window.open(url, '_blank');
+    }
+  };
 
   const readyForListing = artworks?.filter(a => a.aiAnalysisComplete && !a.marketplaceListed) || [];
   const listedArtworks = artworks?.filter(a => a.marketplaceListed) || [];
 
   const handleCreateListing = (artwork: Artwork, platform: string) => {
+    // For now, open the marketplace listing dialog from catalog
+    // This creates actual listings with the platform information
     toast({
-      title: "Creating Listing",
-      description: `Setting up ${artwork.title} on ${platform}...`,
+      title: "Redirecting to Listing Creator",
+      description: `Opening listing interface for ${platform}...`,
     });
+    
+    // In a real implementation, this would redirect to catalog with pre-selected platform
+    window.location.href = `/catalog?createListing=${artwork.id}&platform=${platform}`;
   };
 
   const marketplaces = [
@@ -51,7 +83,11 @@ export default function Marketplace() {
                 <p className="text-sm text-muted-foreground">{marketplace.description}</p>
               </CardHeader>
               <CardContent className="text-center">
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => handleConnectPlatform(marketplace.name)}
+                >
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Connect Platform
                 </Button>
