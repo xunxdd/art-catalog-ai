@@ -154,22 +154,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload and analyze artwork (authenticated users only)
-  app.post("/api/artworks/upload", upload.single('image'), async (req: MulterRequest & any, res) => {
-    console.log('=== UPLOAD DEBUG ===');
-    console.log('Session ID:', req.sessionID);
-    console.log('Session exists:', !!req.session);
-    console.log('User exists:', !!req.user);
-    console.log('isAuthenticated exists:', typeof req.isAuthenticated);
-    console.log('isAuthenticated result:', req.isAuthenticated?.());
-    console.log('User object:', req.user);
-    console.log('===================');
-    
-    try {
-      // Check authentication - handle both auth methods
-      if (!req.isAuthenticated?.() || !req.user) {
-        console.log('Upload rejected: not authenticated');
-        return res.status(401).json({ message: "Unauthorized" });
+  app.post("/api/artworks/upload", async (req: MulterRequest & any, res) => {
+    // Check authentication BEFORE multer processing
+    if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    // Now handle the file upload
+    upload.single('image')(req, res, async (err) => {
+      if (err) {
+        return res.status(400).json({ message: err.message });
       }
+
+      try {
 
       if (!req.file) {
         return res.status(400).json({ message: "No image file provided" });
