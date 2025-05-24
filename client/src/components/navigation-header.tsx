@@ -123,11 +123,18 @@ export function NavigationHeader() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <a href="/api/logout" className="w-full">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </a>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    fetch('/api/auth/logout', { 
+                      method: 'POST', 
+                      credentials: 'include' 
+                    })
+                    .then(() => window.location.href = '/')
+                    .catch(() => window.location.href = '/');
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
