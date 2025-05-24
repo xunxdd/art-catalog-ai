@@ -14,7 +14,7 @@ export default function Gallery() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const { data: artworks, isLoading } = useQuery<Artwork[]>({
-    queryKey: ['/api/artworks'],
+    queryKey: ['/api/user/artworks'],
   });
 
   const filteredArtworks = artworks?.filter(artwork =>
