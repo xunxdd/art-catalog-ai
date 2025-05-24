@@ -4,6 +4,7 @@ import { ArtworkUpload } from "@/components/artwork-upload";
 import { QuickActions } from "@/components/quick-actions";
 import { ArtworkDetail } from "@/components/artwork-detail";
 import { RecentCatalog } from "@/components/recent-catalog";
+import { MarketplaceListingDialog } from "@/components/marketplace-listing-dialog";
 import { Button } from "@/components/ui/button";
 import { Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -11,7 +12,10 @@ import { useQuery } from "@tanstack/react-query";
 import type { Artwork } from "@shared/schema";
 
 export default function Catalog() {
+  const { toast } = useToast();
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
+  const [showMarketplaceListing, setShowMarketplaceListing] = useState(false);
+  const [artworkToList, setArtworkToList] = useState<Artwork | null>(null);
   const { data: artworks } = useQuery<Artwork[]>({
     queryKey: ['/api/artworks/recent'],
   });
@@ -25,7 +29,6 @@ export default function Catalog() {
       setSelectedArtwork(firstArtwork);
     }
   }, [artworks, selectedArtwork]);
-  const { toast } = useToast();
 
   const handleSelectArtwork = (artwork: Artwork) => {
     setSelectedArtwork(artwork);
@@ -46,10 +49,8 @@ export default function Catalog() {
   };
 
   const handleCreateListing = (artwork: Artwork) => {
-    toast({
-      title: "Create Listing",
-      description: "Creating marketplace listing for " + artwork.title,
-    });
+    setArtworkToList(artwork);
+    setShowMarketplaceListing(true);
   };
 
   const handleViewAllCatalog = () => {
@@ -106,6 +107,16 @@ export default function Catalog() {
             <Bot className="h-6 w-6" />
           </Button>
         </div>
+
+        {/* Marketplace Listing Dialog */}
+        <MarketplaceListingDialog
+          artwork={artworkToList}
+          open={showMarketplaceListing}
+          onOpenChange={(open) => {
+            setShowMarketplaceListing(open);
+            if (!open) setArtworkToList(null);
+          }}
+        />
       </div>
     </div>
   );
