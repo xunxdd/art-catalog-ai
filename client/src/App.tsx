@@ -10,6 +10,7 @@ import Gallery from "@/pages/gallery";
 import Analytics from "@/pages/analytics";
 import Marketplace from "@/pages/marketplace";
 import AdminDashboard from "@/pages/admin-dashboard";
+import AccountSettings from "@/pages/account-settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/gallery" component={Gallery} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/marketplace" component={Marketplace} />
+      <Route path="/account" component={AccountSettings} />
       {isAdmin && <Route path="/admin" component={AdminDashboard} />}
       <Route component={NotFound} />
     </Switch>
