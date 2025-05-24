@@ -6,6 +6,7 @@ import { ArtworkDetail } from "@/components/artwork-detail";
 import { RecentCatalog } from "@/components/recent-catalog";
 import { MarketplaceListingDialog } from "@/components/marketplace-listing-dialog";
 import { ArtworkEditDialog } from "@/components/artwork-edit-dialog";
+import { ArtworkShareDialog } from "@/components/artwork-share-dialog";
 import { Button } from "@/components/ui/button";
 import { Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +20,8 @@ export default function Catalog() {
   const [artworkToList, setArtworkToList] = useState<Artwork | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [artworkToEdit, setArtworkToEdit] = useState<Artwork | null>(null);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [artworkToShare, setArtworkToShare] = useState<Artwork | null>(null);
   const { data: artworks } = useQuery<Artwork[]>({
     queryKey: ['/api/artworks/recent'],
   });
@@ -43,10 +46,8 @@ export default function Catalog() {
   };
 
   const handleShareArtwork = (artwork: Artwork) => {
-    toast({
-      title: "Share Artwork",
-      description: "Sharing options will be displayed here.",
-    });
+    setArtworkToShare(artwork);
+    setShowShareDialog(true);
   };
 
   const handleCreateListing = (artwork: Artwork) => {
@@ -128,6 +129,16 @@ export default function Catalog() {
           onOpenChange={(open) => {
             setShowEditDialog(open);
             if (!open) setArtworkToEdit(null);
+          }}
+        />
+
+        {/* Artwork Share Dialog */}
+        <ArtworkShareDialog
+          artwork={artworkToShare}
+          open={showShareDialog}
+          onOpenChange={(open) => {
+            setShowShareDialog(open);
+            if (!open) setArtworkToShare(null);
           }}
         />
       </div>
