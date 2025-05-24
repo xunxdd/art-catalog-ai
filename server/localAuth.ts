@@ -125,6 +125,11 @@ export function setupLocalAuth(app: Express) {
   app.post("/api/auth/register", async (req, res) => {
     try {
       const { email, password, firstName, lastName } = req.body;
+      console.log('Registration attempt for email:', email);
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
       
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(email);
@@ -134,33 +139,52 @@ export function setupLocalAuth(app: Express) {
 
       // Create new user
       const hashedPassword = await hashPassword(password);
-      const user = await storage.upsertUser({
-        id: `email_${Date.now()}`,
+      const userData = {
+        id: `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         email,
-        firstName,
-        lastName,
+        firstName: firstName || null,
+        lastName: lastName || null,
         password: hashedPassword,
-        provider: 'email',
-        role: 'user',
-      });
+        provider: 'email'
+      };
+      
+      console.log('Creating user with data:', { ...userData, password: '[HIDDEN]' });
+      const user = await storage.upsertUser(userData);
+      console.log('User created successfully:', { id: user.id, email: user.email });
 
       req.login(user, (err) => {
-        if (err) return res.status(500).json({ message: "Registration failed" });
+        if (err) {
+          console.error('Login after registration failed:', err);
+          return res.status(500).json({ message: "Registration successful but login failed" });
+        }
+        console.log('User logged in after registration');
         res.status(201).json({ user: { ...user, password: undefined } });
       });
     } catch (error) {
-      res.status(500).json({ message: "Registration failed" });
+      console.error('Registration error:', error);
+      res.status(500).json({ message: "Registration failed: " + (error as Error).message });
     }
   });
 
   // Email/Password Login
   app.post("/api/auth/login", (req, res, next) => {
-    passport.authenticate('local', (err, user, info) => {
-      if (err) return res.status(500).json({ message: "Login failed" });
-      if (!user) return res.status(401).json({ message: info?.message || "Invalid credentials" });
+    console.log('Login attempt for email:', req.body.email);
+    passport.authenticate('local', (err: any, user: any, info: any) => {
+      if (err) {
+        console.error('Login authentication error:', err);
+        return res.status(500).json({ message: "Login failed" });
+      }
+      if (!user) {
+        console.log('Login failed for email:', req.body.email, 'Info:', info?.message);
+        return res.status(401).json({ message: info?.message || "Invalid email or password" });
+      }
 
-      req.login(user, (err) => {
-        if (err) return res.status(500).json({ message: "Login failed" });
+      req.login(user, (loginErr: any) => {
+        if (loginErr) {
+          console.error('Session login error:', loginErr);
+          return res.status(500).json({ message: "Login failed" });
+        }
+        console.log('User logged in successfully:', user.id);
         res.json({ user: { ...user, password: undefined } });
       });
     })(req, res, next);
