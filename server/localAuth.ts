@@ -155,6 +155,7 @@ export function setupLocalAuth(app: Express) {
       const userData = {
         id: `email_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         email,
+        username: email.split('@')[0], // Use email prefix as username
         firstName: firstName || null,
         lastName: lastName || null,
         password: hashedPassword,
@@ -168,14 +169,21 @@ export function setupLocalAuth(app: Express) {
       req.login(user, (err) => {
         if (err) {
           console.error('Login after registration failed:', err);
-          return res.status(500).json({ message: "Registration successful but login failed" });
+          if (!res.headersSent) {
+            return res.status(500).json({ message: "Registration successful but login failed" });
+          }
+          return;
         }
         console.log('User logged in after registration');
-        res.status(201).json({ user: { ...user, password: undefined } });
+        if (!res.headersSent) {
+          res.status(201).json({ user: { ...user, password: undefined } });
+        }
       });
     } catch (error) {
       console.error('Registration error:', error);
-      res.status(500).json({ message: "Registration failed: " + (error as Error).message });
+      if (!res.headersSent) {
+        res.status(500).json({ message: "Registration failed: " + (error as Error).message });
+      }
     }
   });
 
