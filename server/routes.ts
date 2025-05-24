@@ -153,6 +153,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test auth endpoint
+  app.get("/api/test-auth", (req: any, res) => {
+    console.log('=== AUTH TEST ===');
+    console.log('Session ID:', req.sessionID);
+    console.log('Session exists:', !!req.session);
+    console.log('User exists:', !!req.user);
+    console.log('isAuthenticated exists:', typeof req.isAuthenticated);
+    console.log('isAuthenticated result:', req.isAuthenticated?.());
+    console.log('User object:', req.user);
+    console.log('=================');
+    
+    if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+      return res.status(401).json({ message: "Not authenticated", debug: {
+        hasIsAuth: !!req.isAuthenticated,
+        isAuthResult: req.isAuthenticated?.(),
+        hasUser: !!req.user
+      }});
+    }
+    
+    res.json({ message: "Authenticated!", user: req.user });
+  });
+
   // Upload and analyze artwork (authenticated users only)
   app.post("/api/artworks/upload", async (req: MulterRequest & any, res) => {
     // Check authentication BEFORE multer processing
