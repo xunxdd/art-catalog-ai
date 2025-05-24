@@ -46,13 +46,15 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for Replit Auth + role management
+// User storage table for multiple auth providers
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(), // Replit user ID
+  id: varchar("id").primaryKey().notNull(), // Unique user ID
   email: varchar("email").unique(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  password: varchar("password"), // For email/password auth
+  provider: varchar("provider").default("email"), // 'email', 'google', 'facebook', 'replit'
   role: varchar("role", { length: 20 }).default("user"), // 'user' or 'admin'
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

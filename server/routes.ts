@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertArtworkSchema } from "@shared/schema";
 import { setupAuth, isAuthenticated, isAdmin } from "./replitAuth";
+import { setupLocalAuth } from "./localAuth";
 import { analyzeArtworkImage, generateArtworkDescription, suggestArtworkPrice } from "./openai";
 import multer from "multer";
 import sharp from "sharp";
@@ -30,8 +31,9 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication
-  await setupAuth(app);
+  // Setup multiple authentication methods
+  await setupAuth(app);  // Replit Auth
+  setupLocalAuth(app);   // Email/Google/Facebook Auth
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
