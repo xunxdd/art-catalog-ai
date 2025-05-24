@@ -207,8 +207,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
       });
 
-      // Background AI analysis
+      // Background AI analysis with detailed error logging
+      console.log("Starting AI analysis for artwork ID:", initialArtwork.id);
       analyzeArtworkImage(base64Image).then(async (analysis) => {
+        console.log("AI analysis successful:", analysis);
         const tags = [...analysis.style, ...analysis.themes, ...analysis.colors].filter(Boolean);
         await storage.updateArtwork(initialArtwork.id, {
           title: analysis.title,
@@ -222,8 +224,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           aiAnalysisComplete: true,
           analysisData: analysis,
         });
+        console.log("Artwork updated with AI analysis");
       }).catch(async (error) => {
-        console.error("AI analysis failed:", error);
+        console.error("AI analysis failed with error:", error);
+        console.error("Error details:", error.message);
         await storage.updateArtwork(initialArtwork.id, {
           title: "Analysis Failed",
           description: "AI analysis could not be completed for this artwork.",
