@@ -35,11 +35,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   await setupAuth(app);  // Replit Auth
   setupLocalAuth(app);   // Email/Google/Facebook Auth
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Auth routes - Handle both Replit Auth and local auth
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      let userId;
+      let user;
+
+      // Check if it's Replit Auth (has claims) or local auth (direct user object)
+      if (req.user?.claims?.sub) {
+        // Replit Auth user
+        userId = req.user.claims.sub;
+        user = await storage.getUser(userId);
+      } else if (req.user?.id) {
+        // Local auth user (email/google/facebook)
+        user = req.user;
+      }
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);

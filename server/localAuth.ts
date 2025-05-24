@@ -23,6 +23,19 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupLocalAuth(app: Express) {
+  // Passport session serialization
+  passport.serializeUser((user: any, cb) => {
+    cb(null, user.id);
+  });
+  
+  passport.deserializeUser(async (id: string, cb) => {
+    try {
+      const user = await storage.getUser(id);
+      cb(null, user);
+    } catch (error) {
+      cb(error);
+    }
+  });
   // Email/Password Strategy
   passport.use(new LocalStrategy(
     { usernameField: 'email' },
