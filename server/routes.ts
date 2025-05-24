@@ -31,7 +31,7 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Get all artworks
-  app.get("/api/artworks", async (req, res) => {
+  app.get("/api/artworks", isAuthenticated, isAdmin, async (req, res) => {
     try {
       const artworks = await storage.getAllArtworks();
       res.json(artworks);
@@ -82,8 +82,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Upload and analyze artwork
-  app.post("/api/artworks/upload", upload.single('image'), async (req: MulterRequest, res) => {
+  // Upload and analyze artwork (authenticated users only)
+  app.post("/api/artworks/upload", isAuthenticated, upload.single('image'), async (req: MulterRequest & any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No image file provided" });
@@ -106,6 +106,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const thumbnailUrl = `data:image/jpeg;base64,${thumbnailBuffer.toString('base64')}`;
 
       // Create initial artwork record
+      const userId = req.user.claims.sub;
       const initialArtwork = await storage.createArtwork({
         title: "Analyzing...",
         imageUrl,
@@ -115,6 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tags: [],
         suggestedPrice: 0,
         analysisData: null,
+        userId,
       });
 
       // Start AI analysis in background
