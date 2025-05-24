@@ -1,4 +1,5 @@
 import passport from "passport";
+import session from "express-session";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as FacebookStrategy } from "passport-facebook";
@@ -23,6 +24,23 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupLocalAuth(app: Express) {
+  // Setup session middleware
+  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'dev-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: false, // Set to false for development
+      maxAge: sessionTtl,
+    },
+  }));
+
+  app.use(passport.initialize());
+  app.use(passport.session());
+
   // Passport session serialization
   passport.serializeUser((user: any, cb) => {
     cb(null, user.id);

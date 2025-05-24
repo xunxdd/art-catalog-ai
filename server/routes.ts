@@ -31,9 +31,9 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup multiple authentication methods
-  await setupAuth(app);  // Replit Auth
+  // Setup local authentication first (includes session setup)
   setupLocalAuth(app);   // Email/Google/Facebook Auth
+  // Note: Replit Auth disabled during development to avoid session conflicts
 
   // Auth routes - Handle both Replit Auth and local auth
   app.get('/api/auth/user', async (req: any, res) => {
