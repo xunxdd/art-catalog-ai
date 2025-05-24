@@ -247,9 +247,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Upload error:", error);
       res.status(500).json({ message: "Failed to upload and analyze artwork" });
-    }
-
-    // Now handle the file upload
+  });
     upload.single('image')(req, res, async (err) => {
       if (err) {
         return res.status(400).json({ message: err.message });
