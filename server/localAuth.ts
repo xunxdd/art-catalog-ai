@@ -41,18 +41,31 @@ export function setupLocalAuth(app: Express) {
     { usernameField: 'email' },
     async (email, password, done) => {
       try {
+        console.log('LocalStrategy: Looking up user with email:', email);
         const user = await storage.getUserByEmail(email);
-        if (!user || !user.password) {
+        
+        if (!user) {
+          console.log('LocalStrategy: No user found with email:', email);
           return done(null, false, { message: 'Invalid email or password' });
         }
         
+        if (!user.password) {
+          console.log('LocalStrategy: User found but no password stored:', email);
+          return done(null, false, { message: 'Invalid email or password' });
+        }
+        
+        console.log('LocalStrategy: User found, checking password...');
         const isValid = await comparePasswords(password, user.password);
+        console.log('LocalStrategy: Password valid:', isValid);
+        
         if (!isValid) {
           return done(null, false, { message: 'Invalid email or password' });
         }
         
+        console.log('LocalStrategy: Authentication successful for:', email);
         return done(null, user);
       } catch (error) {
+        console.error('LocalStrategy error:', error);
         return done(error);
       }
     }
