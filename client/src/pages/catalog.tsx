@@ -5,6 +5,7 @@ import { QuickActions } from "@/components/quick-actions";
 import { ArtworkDetail } from "@/components/artwork-detail";
 import { RecentCatalog } from "@/components/recent-catalog";
 import { MarketplaceListingDialog } from "@/components/marketplace-listing-dialog";
+import { ArtworkEditDialog } from "@/components/artwork-edit-dialog";
 import { Button } from "@/components/ui/button";
 import { Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +17,8 @@ export default function Catalog() {
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [showMarketplaceListing, setShowMarketplaceListing] = useState(false);
   const [artworkToList, setArtworkToList] = useState<Artwork | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [artworkToEdit, setArtworkToEdit] = useState<Artwork | null>(null);
   const { data: artworks } = useQuery<Artwork[]>({
     queryKey: ['/api/artworks/recent'],
   });
@@ -35,10 +38,8 @@ export default function Catalog() {
   };
 
   const handleEditArtwork = (artwork: Artwork) => {
-    toast({
-      title: "Edit Artwork",
-      description: "Editing functionality will be added here.",
-    });
+    setArtworkToEdit(artwork);
+    setShowEditDialog(true);
   };
 
   const handleShareArtwork = (artwork: Artwork) => {
@@ -117,6 +118,16 @@ export default function Catalog() {
           onOpenChange={(open) => {
             setShowMarketplaceListing(open);
             if (!open) setArtworkToList(null);
+          }}
+        />
+
+        {/* Artwork Edit Dialog */}
+        <ArtworkEditDialog
+          artwork={artworkToEdit}
+          open={showEditDialog}
+          onOpenChange={(open) => {
+            setShowEditDialog(open);
+            if (!open) setArtworkToEdit(null);
           }}
         />
       </div>
