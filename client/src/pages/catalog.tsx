@@ -71,16 +71,17 @@ export default function Catalog() {
     <div className="min-h-screen bg-background">
       <NavigationHeader />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Top Section - Upload, Actions & Selected Artwork */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Left Column - Upload & Actions */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="space-y-6">
             <ArtworkUpload />
             <QuickActions />
           </div>
 
-          {/* Middle Column - Selected Artwork Detail */}
-          <div className="lg:col-span-1">
+          {/* Right Column - Selected Artwork Detail */}
+          <div>
             <ArtworkDetail
               artwork={selectedArtwork}
               onEdit={handleEditArtwork}
@@ -88,14 +89,14 @@ export default function Catalog() {
               onCreateListing={handleCreateListing}
             />
           </div>
+        </div>
 
-          {/* Right Column - Recent Catalog */}
-          <div className="lg:col-span-1">
-            <RecentCatalog
-              onSelectArtwork={handleSelectArtwork}
-              onViewAll={handleViewAllCatalog}
-            />
-          </div>
+        {/* Bottom Section - Recent Catalog (Full Width) */}
+        <div className="w-full">
+          <RecentCatalog
+            onSelectArtwork={handleSelectArtwork}
+            onViewAll={handleViewAllCatalog}
+          />
         </div>
 
         {/* Floating AI Assistant */}
