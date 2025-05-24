@@ -96,7 +96,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get recent artworks
+  // Get user's own artworks
+  app.get("/api/user/artworks", async (req: any, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const artworks = await storage.getUserArtworks(userId);
+      res.json(artworks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user artworks" });
+    }
+  });
+
+  // Get recent artworks (samples for new users)
   app.get("/api/artworks/recent", async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 6;

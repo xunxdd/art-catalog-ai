@@ -11,9 +11,18 @@ interface RecentCatalogProps {
 }
 
 export function RecentCatalog({ onSelectArtwork, onViewAll }: RecentCatalogProps) {
-  const { data: artworks, isLoading } = useQuery<Artwork[]>({
-    queryKey: ['/api/artworks/recent'],
+  const { data: userArtworks, isLoading: userLoading } = useQuery<Artwork[]>({
+    queryKey: ['/api/user/artworks'],
   });
+
+  const { data: sampleArtworks, isLoading: sampleLoading } = useQuery<Artwork[]>({
+    queryKey: ['/api/artworks/recent'],
+    enabled: !userArtworks || userArtworks.length === 0,
+  });
+
+  const artworks = userArtworks && userArtworks.length > 0 ? userArtworks : sampleArtworks;
+  const isLoading = userLoading || sampleLoading;
+  const showingSamples = !userArtworks || userArtworks.length === 0;
 
   if (isLoading) {
     return (
