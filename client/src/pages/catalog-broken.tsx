@@ -37,7 +37,7 @@ export default function Catalog() {
   const handleEditArtwork = (artwork: Artwork) => {
     toast({
       title: "Edit Artwork",
-      description: "Editing functionality will be added here.",
+      description: "Opening artwork editor...",
     });
   };
 
@@ -56,14 +56,14 @@ export default function Catalog() {
   const handleViewAllCatalog = () => {
     toast({
       title: "View All",
-      description: "Expanding to show full catalog view.",
+      description: "Full catalog view coming soon...",
     });
   };
 
   const handleOpenAssistant = () => {
     toast({
       title: "AI Assistant",
-      description: "AI cataloging assistant will be available here.",
+      description: "AI chat assistant coming soon...",
     });
   };
 
@@ -71,31 +71,30 @@ export default function Catalog() {
     <div className="min-h-screen bg-background">
       <NavigationHeader />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-8">
-          {/* Left Column - Upload & Actions */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Left Column: Upload and Quick Actions */}
           <div className="lg:col-span-1 space-y-6">
             <ArtworkUpload />
             <QuickActions />
           </div>
+          
+          {/* Center Column: Artwork Detail View */}
+          <ArtworkDetail
+            artwork={selectedArtwork}
+            onEdit={handleEditArtwork}
+            onShare={handleShareArtwork}
+            onCreateListing={handleCreateListing}
+          />
+        </div>
 
-          {/* Middle Column - Selected Artwork Detail */}
-          <div className="lg:col-span-1">
-            <ArtworkDetail
-              artwork={selectedArtwork}
-              onEdit={handleEditArtwork}
-              onShare={handleShareArtwork}
-              onCreateListing={handleCreateListing}
-            />
-          </div>
-
-          {/* Right Column - Recent Catalog */}
-          <div className="lg:col-span-1">
-            <RecentCatalog
-              onSelectArtwork={handleSelectArtwork}
-              onViewAll={handleViewAllCatalog}
-            />
-          </div>
+        {/* Recent Catalog Items */}
+        <div className="mt-8">
+          <RecentCatalog
+            onSelectArtwork={handleSelectArtwork}
+            onViewAll={handleViewAllCatalog}
+          />
         </div>
 
         {/* Floating AI Assistant */}

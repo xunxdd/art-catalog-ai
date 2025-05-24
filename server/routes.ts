@@ -270,6 +270,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create marketplace listing
+  app.post("/api/marketplace/listings", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub || req.user?.id;
+      const { artworkId, platform, title, description, price, category, tags, status } = req.body;
+
+      // Verify artwork belongs to user
+      const artwork = await storage.getArtwork(artworkId, userId);
+      if (!artwork) {
+        return res.status(404).json({ message: "Artwork not found" });
+      }
+
+      // Update artwork with listing information
+      await storage.updateArtwork(artworkId, {
+        marketplaceListed: true,
+        listingPlatform: platform,
+        listingStatus: status || 'active'
+      }, userId);
+
+      res.json({
+        id: Date.now(), // Simple ID for now
+        artworkId,
+        platform,
+        title,
+        description,
+        price,
+        category,
+        tags,
+        status: status || 'active',
+        createdAt: new Date()
+      });
+    } catch (error) {
+      console.error("Create listing error:", error);
+      res.status(500).json({ message: "Failed to create marketplace listing" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
