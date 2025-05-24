@@ -28,17 +28,47 @@ function Router() {
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
-        <div className="text-center max-w-md mx-auto p-8">
-          <h1 className="text-4xl font-bold mb-4">Art Catalog</h1>
+        <div className="text-center max-w-lg mx-auto p-8">
+          <h1 className="text-4xl font-bold mb-4">Art Catalog AI</h1>
           <p className="text-muted-foreground mb-8">
             AI-powered artwork documentation and sales platform for artists and collectors
           </p>
-          <a
-            href="/api/login"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            Sign In to Continue
-          </a>
+          
+          <div className="space-y-4">
+            <a
+              href="/api/login"
+              className="w-full inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-primary-foreground hover:bg-primary/90 transition-colors"
+            >
+              Sign In with Replit
+            </a>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">New to Art Catalog?</span>
+              </div>
+            </div>
+            
+            <a
+              href="/api/login"
+              className="w-full inline-flex items-center justify-center rounded-md border border-input bg-background px-6 py-3 text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            >
+              Create Account with Replit
+            </a>
+          </div>
+          
+          <div className="mt-8 text-sm text-muted-foreground">
+            <p className="mb-2">✨ AI-powered artwork analysis</p>
+            <p className="mb-2">📸 Smart cataloging and pricing</p>
+            <p className="mb-2">🎨 Professional gallery management</p>
+            <p>🔒 Secure cloud storage for your collection</p>
+          </div>
+          
+          <p className="mt-6 text-xs text-muted-foreground">
+            By continuing, you agree to our Terms of Service and Privacy Policy
+          </p>
         </div>
       </div>
     );
