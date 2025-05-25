@@ -7,6 +7,7 @@ import { RecentCatalog } from "@/components/recent-catalog";
 import { MarketplaceListingDialog } from "@/components/marketplace-listing-dialog";
 import { ArtworkEditDialog } from "@/components/artwork-edit-dialog";
 import { ArtworkShareDialog } from "@/components/artwork-share-dialog";
+import { AIAssistantChat } from "@/components/ai-assistant-chat";
 import { Button } from "@/components/ui/button";
 import { Bot } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -22,6 +23,7 @@ export default function Catalog() {
   const [artworkToEdit, setArtworkToEdit] = useState<Artwork | null>(null);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [artworkToShare, setArtworkToShare] = useState<Artwork | null>(null);
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
   const { data: artworks } = useQuery<Artwork[]>({
     queryKey: ['/api/artworks/recent'],
   });
@@ -63,10 +65,7 @@ export default function Catalog() {
   };
 
   const handleOpenAssistant = () => {
-    toast({
-      title: "AI Assistant",
-      description: "AI cataloging assistant will be available here.",
-    });
+    setShowAIAssistant(true);
   };
 
   return (
@@ -140,6 +139,12 @@ export default function Catalog() {
             setShowShareDialog(open);
             if (!open) setArtworkToShare(null);
           }}
+        />
+
+        {/* AI Assistant Chat */}
+        <AIAssistantChat
+          open={showAIAssistant}
+          onOpenChange={setShowAIAssistant}
         />
       </div>
     </div>
