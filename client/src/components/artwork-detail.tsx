@@ -44,7 +44,13 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
   const deleteMutation = useMutation({
     mutationFn: async (artworkId: number) => {
       const response = await apiRequest('DELETE', `/api/artworks/${artworkId}`);
-      return response.json();
+      // Handle empty response or check if response has content
+      const text = await response.text();
+      try {
+        return text ? JSON.parse(text) : { success: true };
+      } catch {
+        return { success: true }; // If JSON parsing fails, assume success since we got 200
+      }
     },
     onSuccess: () => {
       toast({
