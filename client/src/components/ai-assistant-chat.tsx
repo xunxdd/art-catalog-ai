@@ -71,20 +71,47 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
     const cleanText = text
       .replace(/[#*`]/g, '') // Remove markdown
       .replace(/[🎨🖌️💵⭐🎉🔍💰📸✨❌🚀📝🏷️👋💡✅❌📐🎯]/g, '') // Remove emojis
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold formatting
       .replace(/\n\n/g, '. ') // Replace double newlines with periods
+      .replace(/\n•/g, '. ') // Replace bullet points
       .replace(/\n/g, ' ') // Replace single newlines with spaces
-      .substring(0, 200); // Limit length for better speech
+      .replace(/:/g, '.') // Replace colons with periods for natural breaks
+      .substring(0, 150); // Shorter for quicker responses
     
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.rate = 0.9;
-    utterance.pitch = 1.0;
-    utterance.volume = 0.8;
     
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-    
-    window.speechSynthesis.speak(utterance);
+    // Wait for voices to load and select a more natural one
+    const setVoiceAndSpeak = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(voice => 
+        voice.name.includes('Natural') || 
+        voice.name.includes('Enhanced') ||
+        voice.name.includes('Premium') ||
+        (voice.lang.startsWith('en') && voice.localService === false)
+      ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+      
+      utterance.rate = 1.1; // Slightly faster for more natural feel
+      utterance.pitch = 1.1; // Slightly higher pitch
+      utterance.volume = 0.9;
+      
+      utterance.onstart = () => setIsSpeaking(true);
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      
+      window.speechSynthesis.speak(utterance);
+    };
+
+    // Check if voices are loaded
+    if (window.speechSynthesis.getVoices().length > 0) {
+      setVoiceAndSpeak();
+    } else {
+      // Wait for voices to load
+      window.speechSynthesis.onvoiceschanged = setVoiceAndSpeak;
+    }
   };
 
   const addAssistantMessage = (content: string, actions?: Array<{label: string; action: () => void; variant?: 'default' | 'outline'}>) => {
@@ -312,24 +339,35 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
   const handleSendMessage = () => {
     if (!input.trim()) return;
     
+    // Stop current speech when user sends message
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    
     addUserMessage(input);
     
     // Simple AI responses based on input
     setTimeout(() => {
       if (input.toLowerCase().includes('help') || input.toLowerCase().includes('how')) {
         addAssistantMessage(
-          "I'm here to help! I can guide you through:\n\n📸 **Photography**: Best practices and lighting\n🤖 **AI Analysis**: Automatic artwork identification\n💰 **Pricing**: Market value estimation\n🛒 **Selling**: Marketplace listing creation\n\nWhat specifically would you like help with?",
+          "I'm here to help! I can guide you through photography, AI analysis, pricing, and selling. What specifically would you like help with?",
           [
             { label: "Start Photo Session", action: () => startPhotoSession(), variant: 'default' }
           ]
         );
       } else if (input.toLowerCase().includes('price') || input.toLowerCase().includes('value')) {
         addAssistantMessage(
-          "💰 **Pricing Insights**: I analyze your artwork using:\n\n• Similar works sold recently\n• Artist recognition and style\n• Medium and technique complexity\n• Current market trends\n\nTo get an accurate price estimate, I'll need to see your artwork first. Ready to upload?",
+          "I analyze your artwork using similar sales, artist recognition, and market trends. To get an accurate price estimate, I'll need to see your artwork first. Ready to upload?",
           [
             { label: "Upload for Analysis", action: () => startPhotoSession(), variant: 'default' }
           ]
         );
+      } else if (input.toLowerCase().includes('photo') || input.toLowerCase().includes('camera') || input.toLowerCase().includes('upload')) {
+        startPhotoSession();
+      } else if (input.toLowerCase().includes('stop') || input.toLowerCase().includes('quiet')) {
+        window.speechSynthesis.cancel();
+        setIsSpeaking(false);
+        addAssistantMessage("Got it, I'll be quiet now! You can still use the voice toggle button to turn me back on.", []);
+        setVoiceEnabled(false);
       } else {
         addAssistantMessage(
           "I understand you're interested in artwork cataloging! I can help you photograph, analyze, and list your art for sale. Would you like to start with a photo session?",
@@ -415,18 +453,18 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
+                    window.speechSynthesis.cancel();
+                    setIsSpeaking(false);
                     setVoiceEnabled(!voiceEnabled);
                     if (!voiceEnabled) {
                       toast({
                         title: "Voice Output Enabled",
                         description: "I'll speak my responses now!",
                       });
-                    } else {
-                      window.speechSynthesis.cancel();
-                      setIsSpeaking(false);
                     }
                   }}
                   className="h-8 w-8 p-0"
+                  title={voiceEnabled ? "Click to mute voice" : "Click to enable voice"}
                 >
                   {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
                 </Button>
