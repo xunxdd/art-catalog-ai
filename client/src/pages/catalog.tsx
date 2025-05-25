@@ -90,6 +90,7 @@ export default function Catalog() {
               onEdit={handleEditArtwork}
               onShare={handleShareArtwork}
               onCreateListing={handleCreateListing}
+              onDelete={() => setSelectedArtwork(null)}
             />
           </div>
         </div>

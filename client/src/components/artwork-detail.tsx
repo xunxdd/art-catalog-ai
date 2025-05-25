@@ -13,9 +13,10 @@ interface ArtworkDetailProps {
   onEdit?: (artwork: Artwork) => void;
   onShare?: (artwork: Artwork) => void;
   onCreateListing?: (artwork: Artwork) => void;
+  onDelete?: () => void; // Callback to clear selection after delete
 }
 
-export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: ArtworkDetailProps) {
+export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDelete }: ArtworkDetailProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -52,6 +53,7 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: Art
       });
       queryClient.invalidateQueries({ queryKey: ['/api/user/artworks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/artworks/recent'] });
+      onDelete?.(); // Clear the selected artwork
     },
     onError: (error: any) => {
       toast({
