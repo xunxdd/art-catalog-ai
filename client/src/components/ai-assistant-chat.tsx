@@ -219,21 +219,17 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append('image', file);
+      // Convert to base64 for better network compatibility
+      const base64 = await fileToBase64(file);
       
-      // Use fetch directly for better error handling
-      const response = await fetch("/api/artworks/upload", {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
+      const uploadData = {
+        imageData: base64,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+      };
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Upload failed: ${errorText}`);
-      }
-      
+      const response = await apiRequest("POST", "/api/artworks/upload-base64", uploadData);
       return response.json();
     },
     onSuccess: (data) => {
@@ -501,6 +497,19 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
       recognitionRef.current?.stop();
       setIsListening(false);
     }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   return (

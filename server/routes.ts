@@ -256,6 +256,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Base64 upload endpoint - alternative method for network issues
+  app.post("/api/artworks/upload-base64", async (req, res) => {
+    try {
+      console.log('=== BASE64 UPLOAD ATTEMPT ===');
+      console.log('Has imageData:', !!req.body.imageData);
+      console.log('User exists:', !!req.user);
+      console.log('==============================');
+
+      if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      let userId;
+      if (req.user.claims?.sub) {
+        userId = req.user.claims.sub;
+      } else if (req.user.id) {
+        userId = req.user.id;  
+      } else {
+        return res.status(401).json({ message: "Invalid user session" });
+      }
+
+      const { imageData, fileName, fileType } = req.body;
+      
+      if (!imageData) {
+        return res.status(400).json({ message: "No image data provided" });
+      }
+
+      // Convert base64 back to buffer for processing
+      const imageBuffer = Buffer.from(imageData, 'base64');
+      const thumbnailBuffer = await sharp(imageBuffer).resize(400, 400, { fit: 'cover' }).jpeg({ quality: 80 }).toBuffer();
+      const imageUrl = `data:${fileType};base64,${imageData}`;
+      const thumbnailUrl = `data:image/jpeg;base64,${thumbnailBuffer.toString('base64')}`;
+
+      const initialArtwork = await storage.createArtwork({
+        title: "Analyzing...",
+        imageUrl,
+        thumbnailUrl,
+        medium: "",
+        description: "",
+        tags: [],
+        suggestedPrice: 0,
+        analysisData: null,
+        userId,
+      });
+
+      // Background AI analysis
+      analyzeArtworkImage(imageData).then(async (analysis) => {
+        const tags = [...analysis.style, ...analysis.themes, ...analysis.colors].filter(Boolean);
+        await storage.updateArtwork(initialArtwork.id, {
+          title: analysis.title,
+          artist: analysis.artist,
+          medium: analysis.medium,
+          year: analysis.estimatedYear,
+          condition: analysis.condition,
+          description: analysis.description,
+          tags: tags,
+          suggestedPrice: analysis.suggestedPrice,
+          analysisData: analysis,
+        }, userId);
+      }).catch(error => {
+        console.error("AI analysis failed:", error);
+      });
+
+      res.status(201).json({ 
+        id: initialArtwork.id,
+        title: initialArtwork.title,
+        imageUrl: initialArtwork.imageUrl 
+      });
+    } catch (error: any) {
+      console.error("Base64 upload error:", error);
+      res.status(500).json({ message: error.message || "Failed to upload artwork" });
+    }
+  });
+
   // Update artwork
   app.patch("/api/artworks/:id", async (req, res) => {
     try {

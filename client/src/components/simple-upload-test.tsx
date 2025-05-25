@@ -46,11 +46,17 @@ export function SimpleUploadTest() {
     setLastResult("");
     
     try {
-      const formData = new FormData();
-      formData.append('image', file);
+      // Convert file to base64 - this often fixes network issues
+      const base64 = await fileToBase64(file);
       
-      // Use the same API method that works for other requests
-      const response = await apiRequest("POST", "/api/artworks/upload", formData);
+      const uploadData = {
+        imageData: base64,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+      };
+      
+      const response = await apiRequest("POST", "/api/artworks/upload-base64", uploadData);
       const data = await response.json();
       
       setLastResult(`✅ SUCCESS! Created: "${data.title}" (ID: ${data.id})`);
@@ -68,6 +74,20 @@ export function SimpleUploadTest() {
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove the data URL prefix to get just the base64 data
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   return (
