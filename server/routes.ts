@@ -364,7 +364,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const artworkId = parseInt(req.params.id);
       const userId = req.user?.claims?.sub || req.user?.id;
       
+      console.log(`=== DELETE ATTEMPT ===`);
+      console.log(`Artwork ID: ${artworkId}`);
+      console.log(`User ID: ${userId}`);
+      console.log(`User object:`, req.user);
+      console.log(`======================`);
+      
       const deleted = await storage.deleteArtwork(artworkId, userId);
+      console.log(`Delete result: ${deleted}`);
+      
       if (!deleted) {
         return res.status(404).json({ message: "Artwork not found or access denied" });
       }
