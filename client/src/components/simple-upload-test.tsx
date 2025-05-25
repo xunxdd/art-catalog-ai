@@ -78,15 +78,28 @@ export function SimpleUploadTest() {
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        // Remove the data URL prefix to get just the base64 data
-        const base64 = result.split(',')[1];
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Compress to max 1024px on longest side
+        const maxSize = 1024;
+        const ratio = Math.min(maxSize / img.width, maxSize / img.height);
+        
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to JPEG with 80% quality for smaller size
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        const base64 = compressedDataUrl.split(',')[1];
         resolve(base64);
       };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+      
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
     });
   };
 
