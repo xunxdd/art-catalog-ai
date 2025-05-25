@@ -359,15 +359,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete artwork (authenticated users - own artworks only)
-  app.delete("/api/artworks/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/artworks/:id", async (req: any, res) => {
     try {
       const artworkId = parseInt(req.params.id);
-      const userId = req.user?.claims?.sub || req.user?.id;
+      
+      if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const userId = req.user.claims?.sub || req.user.id;
       
       console.log(`=== DELETE ATTEMPT ===`);
       console.log(`Artwork ID: ${artworkId}`);
       console.log(`User ID: ${userId}`);
-      console.log(`User object:`, req.user);
       console.log(`======================`);
       
       const deleted = await storage.deleteArtwork(artworkId, userId);
