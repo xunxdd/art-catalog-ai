@@ -347,23 +347,27 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
     
     // Simple AI responses based on input
     setTimeout(() => {
-      if (input.toLowerCase().includes('help') || input.toLowerCase().includes('how')) {
+      const userInput = input.toLowerCase();
+      
+      if (userInput.includes('help') || userInput.includes('how')) {
         addAssistantMessage(
           "I'm here to help! I can guide you through photography, AI analysis, pricing, and selling. What specifically would you like help with?",
           [
             { label: "Start Photo Session", action: () => startPhotoSession(), variant: 'default' }
           ]
         );
-      } else if (input.toLowerCase().includes('price') || input.toLowerCase().includes('value')) {
+      } else if (userInput.includes('price') || userInput.includes('value')) {
         addAssistantMessage(
           "I analyze your artwork using similar sales, artist recognition, and market trends. To get an accurate price estimate, I'll need to see your artwork first. Ready to upload?",
           [
             { label: "Upload for Analysis", action: () => startPhotoSession(), variant: 'default' }
           ]
         );
-      } else if (input.toLowerCase().includes('photo') || input.toLowerCase().includes('camera') || input.toLowerCase().includes('upload')) {
+      } else if (userInput.includes('photo') || userInput.includes('camera') || userInput.includes('upload')) {
         startPhotoSession();
-      } else if (input.toLowerCase().includes('stop') || input.toLowerCase().includes('quiet')) {
+      } else if (userInput.includes('start') || userInput.includes('yes') || userInput.includes('go') || userInput.includes('begin')) {
+        startPhotoSession();
+      } else if (userInput.includes('stop') || userInput.includes('quiet') || userInput.includes('mute')) {
         window.speechSynthesis.cancel();
         setIsSpeaking(false);
         addAssistantMessage("Got it, I'll be quiet now! You can still use the voice toggle button to turn me back on.", []);
@@ -376,7 +380,7 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
           ]
         );
       }
-    }, 1000);
+    }, 800);
     
     setInput("");
   };
