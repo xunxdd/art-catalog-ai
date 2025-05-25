@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import type { Artwork } from "@shared/schema";
 
 interface RecentCatalogProps {

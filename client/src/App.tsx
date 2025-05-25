@@ -11,6 +11,7 @@ import Analytics from "@/pages/analytics";
 import Marketplace from "@/pages/marketplace";
 import AdminDashboard from "@/pages/admin-dashboard";
 import AccountSettings from "@/pages/account-settings";
+import ArtworkDetailPage from "@/pages/artwork-detail-page";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -35,6 +36,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Catalog} />
       <Route path="/catalog" component={Catalog} />
+      <Route path="/artwork/:id" component={ArtworkDetailPage} />
       <Route path="/gallery" component={Gallery} />
       <Route path="/analytics" component={Analytics} />
       <Route path="/marketplace" component={Marketplace} />

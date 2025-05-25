@@ -130,6 +130,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get single artwork by ID
+  app.get("/api/artworks/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = req.user.claims?.sub || req.user.id;
+      
+      const artwork = await storage.getArtwork(id, userId);
+      
+      if (!artwork) {
+        return res.status(404).json({ message: "Artwork not found" });
+      }
+      
+      res.json(artwork);
+    } catch (error) {
+      console.error('Get artwork error:', error);
+      res.status(500).json({ error: 'Failed to fetch artwork' });
+    }
+  });
+
   // Search artworks
   app.get("/api/artworks/search", async (req, res) => {
     try {
