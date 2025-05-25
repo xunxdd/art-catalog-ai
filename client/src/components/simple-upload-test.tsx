@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { Camera, Upload } from "lucide-react";
 
 export function SimpleUploadTest() {
@@ -48,32 +49,15 @@ export function SimpleUploadTest() {
       const formData = new FormData();
       formData.append('image', file);
       
-      // Use the same fetch method as the rest of the app
-      const response = await fetch('/api/artworks/upload', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: {
-          // Don't set Content-Type, let browser set it for FormData
-        },
-        body: formData,
-      });
+      // Use the same API method that works for other requests
+      const response = await apiRequest("POST", "/api/artworks/upload", formData);
+      const data = await response.json();
       
-      if (response.ok) {
-        const data = await response.json();
-        setLastResult(`✅ SUCCESS! Created: "${data.title}" (ID: ${data.id})`);
-        toast({
-          title: "Upload Works!",
-          description: `Created artwork: ${data.title}`,
-        });
-      } else {
-        const errorText = await response.text();
-        setLastResult(`❌ FAILED (${response.status}): ${errorText}`);
-        toast({
-          title: "Upload Error",
-          description: `Status ${response.status}: ${errorText}`,
-          variant: "destructive",
-        });
-      }
+      setLastResult(`✅ SUCCESS! Created: "${data.title}" (ID: ${data.id})`);
+      toast({
+        title: "Upload Works!",
+        description: `Created artwork: ${data.title}`,
+      });
     } catch (error: any) {
       setLastResult(`❌ Error: ${error.message}`);
       toast({
