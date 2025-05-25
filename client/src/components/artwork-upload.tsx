@@ -81,6 +81,7 @@ export function ArtworkUpload() {
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files || files.length === 0) return;
     
+    // For now, handle single file upload (we can enhance to multiple later)
     const file = files[0];
     if (!file.type.startsWith('image/')) {
       toast({

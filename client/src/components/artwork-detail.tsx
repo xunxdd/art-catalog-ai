@@ -6,6 +6,7 @@ import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { ArtworkSlideshow } from "@/components/artwork-slideshow";
 import type { Artwork } from "@shared/schema";
 
 interface ArtworkDetailProps {
@@ -86,12 +87,12 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
 
   return (
     <Card className="lg:col-span-2 overflow-hidden">
-      {/* Artwork Images */}
+      {/* Artwork Images with Slideshow */}
       <div className="relative">
-        <img
-          src={getImageUrl(artwork.imageUrl)}
-          alt={artwork.title}
-          className="w-full h-80 object-cover"
+        <ArtworkSlideshow 
+          images={[artwork.imageUrl, ...(artwork.imageUrls || [])]}
+          title={artwork.title}
+          className="h-80"
         />
         
         <div className="absolute top-4 right-4 flex space-x-2">
@@ -107,15 +108,6 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
             <Heart className="h-4 w-4" />
           </Button>
         </div>
-
-        {/* Additional Images from Different Angles */}
-        {artwork.imageUrls && artwork.imageUrls.length > 0 && (
-          <div className="absolute bottom-4 right-4">
-            <Badge variant="secondary" className="bg-black/70 text-white">
-              +{artwork.imageUrls.length} more photos
-            </Badge>
-          </div>
-        )}
         
         {/* AI Analysis Status */}
         <div className="absolute bottom-4 left-4">
