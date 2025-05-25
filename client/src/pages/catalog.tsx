@@ -30,20 +30,23 @@ export default function Catalog() {
     queryKey: ['/api/artworks/recent'],
   });
 
-  // Auto-select first artwork when data loads
+  // Auto-select artwork when data loads or changes
   useEffect(() => {
-    if (artworks && artworks.length > 0 && !selectedArtwork) {
-      // Prioritize user uploads over sample artwork
-      const userArtwork = artworks.find(art => art.artist !== 'Vincent van Gogh');
-      const firstArtwork = userArtwork || artworks[0];
-      setSelectedArtwork(firstArtwork);
-    }
-    
-    // Clear selection if the selected artwork no longer exists
-    if (selectedArtwork && artworks) {
-      const stillExists = artworks.find(art => art.id === selectedArtwork.id);
-      if (!stillExists) {
-        setSelectedArtwork(null);
+    if (artworks && artworks.length > 0) {
+      // Clear selection if the selected artwork no longer exists
+      if (selectedArtwork) {
+        const stillExists = artworks.find(art => art.id === selectedArtwork.id);
+        if (!stillExists) {
+          setSelectedArtwork(null);
+        }
+      }
+      
+      // Auto-select newest artwork if none selected
+      if (!selectedArtwork) {
+        // Prioritize user uploads over sample artwork, and get the newest
+        const userArtworks = artworks.filter(art => art.artist !== 'Vincent van Gogh');
+        const newestArtwork = userArtworks.length > 0 ? userArtworks[0] : artworks[0];
+        setSelectedArtwork(newestArtwork);
       }
     }
   }, [artworks, selectedArtwork]);
