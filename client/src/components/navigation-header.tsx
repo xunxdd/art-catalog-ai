@@ -7,15 +7,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Link, useLocation } from "wouter";
-import { Palette, Search, Bell, User, LogOut, Settings, Shield } from "lucide-react";
+import { Palette, Search, Bell, User, LogOut, Settings, Shield, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 
 export function NavigationHeader() {
   const [location] = useLocation();
   const { user, isAdmin } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location === path;
 
@@ -24,6 +33,82 @@ export function NavigationHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
+            {/* Mobile menu button */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-64">
+                <SheetHeader>
+                  <SheetTitle className="flex items-center space-x-2 text-left">
+                    <Palette className="text-primary h-6 w-6" />
+                    <span>ArtCatalog AI</span>
+                  </SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col space-y-4 mt-6">
+                  <Link 
+                    href="/" 
+                    className={`text-left py-2 px-3 rounded-md transition-colors ${
+                      isActive('/') 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Catalog
+                  </Link>
+                  <Link 
+                    href="/gallery" 
+                    className={`text-left py-2 px-3 rounded-md transition-colors ${
+                      isActive('/gallery') 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Gallery
+                  </Link>
+                  <Link 
+                    href="/analytics" 
+                    className={`text-left py-2 px-3 rounded-md transition-colors ${
+                      isActive('/analytics') 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Analytics
+                  </Link>
+                  <Link 
+                    href="/marketplace" 
+                    className={`text-left py-2 px-3 rounded-md transition-colors ${
+                      isActive('/marketplace') 
+                        ? 'bg-primary text-primary-foreground' 
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Marketplace
+                  </Link>
+                  {isAdmin && (
+                    <Link 
+                      href="/admin" 
+                      className={`text-left py-2 px-3 rounded-md transition-colors ${
+                        isActive('/admin') 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Admin
+                    </Link>
+                  )}
+                </nav>
+              </SheetContent>
+            </Sheet>
+
             <Link href="/" className="flex items-center space-x-2">
               <Palette className="text-primary h-8 w-8" />
               <h1 className="text-xl font-bold text-foreground">ArtCatalog AI</h1>
