@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bot, User, Camera, Upload, Send, Mic, MicOff, Image } from "lucide-react";
+import { Bot, User, Camera, Upload, Send, Mic, MicOff, Image, X, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 interface AIAssistantChatProps {
   open: boolean;
@@ -30,8 +32,11 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [currentStep, setCurrentStep] = useState<'greeting' | 'photo_tips' | 'uploading' | 'analyzing' | 'complete'>('greeting');
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const queryClient = useQueryClient();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -133,27 +138,80 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
     input.click();
   };
 
-  const handleFileSelect = (event: Event) => {
-    const target = event.target as HTMLInputElement;
-    const files = target.files;
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
     if (files && files.length > 0) {
       processFiles(Array.from(files));
     }
   };
 
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('artwork', file);
+      const response = await apiRequest("POST", "/api/artworks/upload", formData);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user/artworks"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/artworks/recent"] });
+      
+      addAssistantMessage(
+        `✨ **Analysis Complete!** Here's what I found:\n\n🎨 **Title**: ${data.title}\n🖌️ **Medium**: ${data.medium || 'Analyzing...'}\n💵 **Suggested Price**: $${data.suggestedPrice || 'Calculating...'}\n⭐ **Condition**: ${data.condition || 'Excellent'}\n\nI've created your catalog entry with professional descriptions. What would you like to do next?`,
+        [
+          { label: "Create Marketplace Listing", action: () => handleCreateListing(), variant: 'default' },
+          { label: "Edit Details", action: () => handleEditDetails(), variant: 'outline' },
+          { label: "Upload Another Artwork", action: () => resetConversation(), variant: 'outline' }
+        ]
+      );
+      setCurrentStep('complete');
+    },
+    onError: (error: any) => {
+      addAssistantMessage(
+        `❌ **Upload Failed**: ${error.message}\n\nPlease try again with a different image or check your connection.`,
+        [
+          { label: "Try Again", action: () => setCurrentStep('uploading'), variant: 'default' }
+        ]
+      );
+    }
+  });
+
   const processFiles = (files: File[]) => {
+    setUploadedFiles(files);
     setCurrentStep('analyzing');
-    addUserMessage(`Uploaded ${files.length} photo${files.length > 1 ? 's' : ''}`);
+    addUserMessage(`Selected ${files.length} photo${files.length > 1 ? 's' : ''}`);
     
     addAssistantMessage(
-      `🎉 Great! I received ${files.length} photo${files.length > 1 ? 's' : ''}. Now I'll analyze your artwork using AI to:\n\n🔍 **Identify**: Style, medium, and technique\n💰 **Estimate**: Market value and pricing\n📝 **Generate**: Professional description\n🏷️ **Suggest**: Categories and tags\n\nThis usually takes 10-30 seconds...`,
-      []
+      `🎉 Perfect! I can see your ${files.length} photo${files.length > 1 ? 's' : ''}. Ready to upload and analyze?`,
+      [
+        { label: "Upload & Analyze", action: () => startUpload(), variant: 'default' },
+        { label: "Remove Photos", action: () => clearFiles(), variant: 'outline' }
+      ]
     );
+  };
 
-    // Simulate AI analysis (in real implementation, this would call your upload API)
-    setTimeout(() => {
-      completeAnalysis();
-    }, 3000);
+  const startUpload = () => {
+    if (uploadedFiles.length > 0) {
+      addAssistantMessage(
+        `🚀 **Uploading and analyzing** your artwork...\n\n🔍 **AI Analysis includes**:\n• Style and medium identification\n• Market value estimation\n• Professional description generation\n• Category and tag suggestions\n\nThis usually takes 10-30 seconds...`,
+        []
+      );
+      
+      // Upload the first file (main artwork photo)
+      uploadMutation.mutate(uploadedFiles[0]);
+    }
+  };
+
+  const clearFiles = () => {
+    setUploadedFiles([]);
+    setCurrentStep('uploading');
+    addAssistantMessage(
+      "📸 **Photos cleared!** Ready to take new photos of your artwork.",
+      [
+        { label: "Upload Photos", action: () => triggerFileUpload(), variant: 'default' },
+        { label: "Use Camera", action: () => triggerCameraCapture(), variant: 'outline' }
+      ]
+    );
   };
 
   const completeAnalysis = () => {
@@ -249,14 +307,62 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
     setInput("");
   };
 
-  const toggleVoiceInput = () => {
-    setIsListening(!isListening);
-    if (!isListening) {
-      // Start voice recognition
+  const initSpeechRecognition = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       toast({
-        title: "Voice Input",
-        description: "Voice recognition would start here...",
+        title: "Voice Not Supported",
+        description: "Your browser doesn't support voice input. Please type your message.",
+        variant: "destructive",
       });
+      return false;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      toast({
+        title: "Listening...",
+        description: "Speak now, I'm listening!",
+      });
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+      toast({
+        title: "Voice Error",
+        description: "Couldn't understand. Please try again or type your message.",
+        variant: "destructive",
+      });
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    return true;
+  };
+
+  const toggleVoiceInput = () => {
+    if (!isListening) {
+      if (initSpeechRecognition()) {
+        recognitionRef.current?.start();
+      }
+    } else {
+      recognitionRef.current?.stop();
+      setIsListening(false);
     }
   };
 
@@ -279,6 +385,48 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto space-y-4 p-4">
+            {/* Show uploaded files preview */}
+            {uploadedFiles.length > 0 && (
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Selected Photos ({uploadedFiles.length})</span>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={clearFiles}
+                    className="h-6 w-6 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {uploadedFiles.map((file, index) => (
+                    <div key={index} className="relative aspect-square bg-gray-100 rounded">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover rounded"
+                      />
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="absolute -top-1 -right-1 h-5 w-5 p-0 rounded-full"
+                        onClick={() => {
+                          const newFiles = uploadedFiles.filter((_, i) => i !== index);
+                          setUploadedFiles(newFiles);
+                          if (newFiles.length === 0) {
+                            setCurrentStep('uploading');
+                          }
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {messages.map((message) => (
               <div
                 key={message.id}
