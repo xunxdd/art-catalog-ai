@@ -13,10 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Bot, TestTube } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import type { Artwork } from "@shared/schema";
 
 export default function Catalog() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [showMarketplaceListing, setShowMarketplaceListing] = useState(false);
   const [artworkToList, setArtworkToList] = useState<Artwork | null>(null);
@@ -71,10 +73,7 @@ export default function Catalog() {
   };
 
   const handleViewAllCatalog = () => {
-    toast({
-      title: "View All",
-      description: "Expanding to show full catalog view.",
-    });
+    setLocation('/gallery');
   };
 
   const handleOpenAssistant = () => {
