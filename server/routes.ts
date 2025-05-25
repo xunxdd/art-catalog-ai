@@ -179,16 +179,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('User object:', req.user);
       console.log('====================');
       
-      // Use exact same auth check as /api/auth/user endpoint
-      if (!req.isAuthenticated()) {
+      // Check authentication like other endpoints
+      if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
         console.log('Upload failed: Not authenticated');
         return res.status(401).json({ message: "Not authenticated" });
       }
 
       let userId;
-      if (req.user?.claims?.sub) {
+      if (req.user.claims?.sub) {
         userId = req.user.claims.sub;
-      } else if (req.user?.id) {
+      } else if (req.user.id) {
         userId = req.user.id;  
       } else {
         return res.status(401).json({ message: "Invalid user session" });

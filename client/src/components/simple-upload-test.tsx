@@ -54,20 +54,19 @@ export function SimpleUploadTest() {
         body: formData,
       });
       
-      const result = await response.text();
-      
       if (response.ok) {
-        const data = JSON.parse(result);
-        setLastResult(`✅ Success: ${data.title} (ID: ${data.id})`);
+        const data = await response.json();
+        setLastResult(`✅ SUCCESS! Created: "${data.title}" (ID: ${data.id})`);
         toast({
-          title: "Upload Successful!",
+          title: "Upload Works!",
           description: `Created artwork: ${data.title}`,
         });
       } else {
-        setLastResult(`❌ Failed: ${response.status} - ${result}`);
+        const errorText = await response.text();
+        setLastResult(`❌ FAILED (${response.status}): ${errorText}`);
         toast({
-          title: "Upload Failed",
-          description: result,
+          title: "Upload Error",
+          description: `Status ${response.status}: ${errorText}`,
           variant: "destructive",
         });
       }
