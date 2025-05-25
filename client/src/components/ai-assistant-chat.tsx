@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bot, User, Camera, Upload, Send, Mic, MicOff, Image, X, Trash2 } from "lucide-react";
+import { Bot, User, Camera, Upload, Send, Mic, MicOff, Image, X, Trash2, Volume2, VolumeX } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -31,6 +31,8 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [currentStep, setCurrentStep] = useState<'greeting' | 'photo_tips' | 'uploading' | 'analyzing' | 'complete'>('greeting');
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -59,6 +61,32 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
     }
   }, [open, messages.length]);
 
+  const speakText = (text: string) => {
+    if (!voiceEnabled || !('speechSynthesis' in window)) return;
+    
+    // Stop any current speech
+    window.speechSynthesis.cancel();
+    
+    // Clean text for speech (remove markdown and emojis)
+    const cleanText = text
+      .replace(/[#*`]/g, '') // Remove markdown
+      .replace(/[🎨🖌️💵⭐🎉🔍💰📸✨❌🚀📝🏷️👋💡✅❌📐🎯]/g, '') // Remove emojis
+      .replace(/\n\n/g, '. ') // Replace double newlines with periods
+      .replace(/\n/g, ' ') // Replace single newlines with spaces
+      .substring(0, 200); // Limit length for better speech
+    
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    utterance.volume = 0.8;
+    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    
+    window.speechSynthesis.speak(utterance);
+  };
+
   const addAssistantMessage = (content: string, actions?: Array<{label: string; action: () => void; variant?: 'default' | 'outline'}>) => {
     const message: Message = {
       id: Date.now().toString(),
@@ -68,6 +96,9 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
       actions
     };
     setMessages(prev => [...prev, message]);
+    
+    // Speak the message after a short delay
+    setTimeout(() => speakText(content), 500);
   };
 
   const addUserMessage = (content: string) => {
@@ -379,13 +410,35 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
             <DialogTitle className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-blue-600" />
               AI Art Assistant
-              <Badge variant="outline" className="ml-auto">
-                {currentStep === 'greeting' && 'Ready'}
-                {currentStep === 'photo_tips' && 'Guiding'}
-                {currentStep === 'uploading' && 'Ready to Upload'}
-                {currentStep === 'analyzing' && 'Analyzing...'}
-                {currentStep === 'complete' && 'Complete'}
-              </Badge>
+              <div className="flex items-center gap-2 ml-auto">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setVoiceEnabled(!voiceEnabled);
+                    if (!voiceEnabled) {
+                      toast({
+                        title: "Voice Output Enabled",
+                        description: "I'll speak my responses now!",
+                      });
+                    } else {
+                      window.speechSynthesis.cancel();
+                      setIsSpeaking(false);
+                    }
+                  }}
+                  className="h-8 w-8 p-0"
+                >
+                  {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                </Button>
+                <Badge variant="outline" className={isSpeaking ? "bg-green-50 text-green-700" : ""}>
+                  {isSpeaking && 'Speaking...'}
+                  {!isSpeaking && currentStep === 'greeting' && 'Ready'}
+                  {!isSpeaking && currentStep === 'photo_tips' && 'Guiding'}
+                  {!isSpeaking && currentStep === 'uploading' && 'Ready to Upload'}
+                  {!isSpeaking && currentStep === 'analyzing' && 'Analyzing...'}
+                  {!isSpeaking && currentStep === 'complete' && 'Complete'}
+                </Badge>
+              </div>
             </DialogTitle>
           </DialogHeader>
 
