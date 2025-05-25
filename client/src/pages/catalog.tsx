@@ -38,6 +38,14 @@ export default function Catalog() {
       const firstArtwork = userArtwork || artworks[0];
       setSelectedArtwork(firstArtwork);
     }
+    
+    // Clear selection if the selected artwork no longer exists
+    if (selectedArtwork && artworks) {
+      const stillExists = artworks.find(art => art.id === selectedArtwork.id);
+      if (!stillExists) {
+        setSelectedArtwork(null);
+      }
+    }
   }, [artworks, selectedArtwork]);
 
   const handleSelectArtwork = (artwork: Artwork) => {
