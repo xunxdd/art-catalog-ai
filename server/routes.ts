@@ -170,8 +170,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Upload and analyze artwork (authenticated users only)
   app.post("/api/artworks/upload", upload.single('image'), async (req: MulterRequest & any, res) => {
     try {
+      console.log('=== UPLOAD ATTEMPT ===');
+      console.log('Has file:', !!req.file);
+      console.log('File details:', req.file ? { name: req.file.originalname, size: req.file.size, mimetype: req.file.mimetype } : 'None');
+      console.log('Session ID:', req.sessionID);
+      console.log('User exists:', !!req.user);
+      console.log('isAuthenticated result:', req.isAuthenticated?.());
+      console.log('User object:', req.user);
+      console.log('====================');
+      
       // Use exact same auth check as /api/auth/user endpoint
       if (!req.isAuthenticated()) {
+        console.log('Upload failed: Not authenticated');
         return res.status(401).json({ message: "Not authenticated" });
       }
 
