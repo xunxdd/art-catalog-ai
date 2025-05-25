@@ -133,8 +133,13 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.capture = 'environment';
-    input.onchange = handleFileSelect;
+    input.setAttribute('capture', 'environment');
+    input.onchange = (e) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        processFiles(Array.from(target.files));
+      }
+    };
     input.click();
   };
 
