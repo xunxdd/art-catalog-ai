@@ -56,7 +56,7 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: Art
 
   return (
     <Card className="lg:col-span-2 overflow-hidden">
-      {/* Artwork Image */}
+      {/* Artwork Images */}
       <div className="relative">
         <img
           src={getImageUrl(artwork.imageUrl)}
@@ -77,6 +77,15 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: Art
             <Heart className="h-4 w-4" />
           </Button>
         </div>
+
+        {/* Additional Images from Different Angles */}
+        {artwork.imageUrls && artwork.imageUrls.length > 0 && (
+          <div className="absolute bottom-4 right-4">
+            <Badge variant="secondary" className="bg-black/70 text-white">
+              +{artwork.imageUrls.length} more photos
+            </Badge>
+          </div>
+        )}
         
         {/* AI Analysis Status */}
         <div className="absolute bottom-4 left-4">

@@ -277,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid user session" });
       }
 
-      const { imageData, fileName, fileType } = req.body;
+      const { imageData, additionalImages, fileName, fileType } = req.body;
       
       if (!imageData) {
         return res.status(400).json({ message: "No image data provided" });
@@ -289,9 +289,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const imageUrl = `data:${fileType};base64,${imageData}`;
       const thumbnailUrl = `data:image/jpeg;base64,${thumbnailBuffer.toString('base64')}`;
 
+      // Process additional images from different angles
+      const imageUrls = additionalImages?.map((img: string) => `data:image/jpeg;base64,${img}`) || [];
+
       const initialArtwork = await storage.createArtwork({
         title: "Analyzing...",
         imageUrl,
+        imageUrls,
         thumbnailUrl,
         medium: "",
         description: "",
