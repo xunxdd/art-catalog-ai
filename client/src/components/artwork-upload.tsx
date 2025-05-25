@@ -66,7 +66,7 @@ export function ArtworkUpload() {
         description: "AI analysis is processing your artwork...",
       });
       // Invalidate artworks cache to refetch data
-      queryClient.invalidateQueries({ queryKey: ['/api/artworks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/artworks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/artworks/recent'] });
     },
     onError: (error) => {
