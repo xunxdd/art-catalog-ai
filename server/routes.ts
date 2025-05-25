@@ -356,13 +356,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add photo to existing artwork
   app.post('/api/artworks/:id/add-photo', async (req: any, res) => {
     try {
-      if (!req.isAuthenticated()) {
-        return res.status(401).json({ message: 'Not authenticated' });
+      // Check authentication like other endpoints
+      if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
+        console.log('Add photo failed: Not authenticated');
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      let userId;
+      if (req.user.claims?.sub) {
+        userId = req.user.claims.sub;
+      } else if (req.user.id) {
+        userId = req.user.id;  
+      } else {
+        return res.status(401).json({ message: "Invalid user session" });
       }
 
       const artworkId = parseInt(req.params.id);
       const { imageData, fileName, fileType, fileSize } = req.body;
-      const userId = req.user.id;
 
       if (!imageData) {
         return res.status(400).json({ error: 'Image data is required' });
