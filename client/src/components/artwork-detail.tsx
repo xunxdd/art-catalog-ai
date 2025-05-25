@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Expand, Heart, Store, Edit, Share, CheckCircle, RefreshCw } from "lucide-react";
+import { Expand, Heart, Store, Edit, Share, CheckCircle, RefreshCw, ShoppingCart, Trash2 } from "lucide-react";
 import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
