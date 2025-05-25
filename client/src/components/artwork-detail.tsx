@@ -40,6 +40,28 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: Art
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (artworkId: number) => {
+      const response = await apiRequest('DELETE', `/api/artworks/${artworkId}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Artwork deleted",
+        description: "The artwork has been removed from your catalog",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/artworks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/artworks/recent'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete failed",
+        description: error.message || "Failed to delete artwork",
+        variant: "destructive",
+      });
+    },
+  });
+
   if (!artwork) {
     return (
       <Card className="lg:col-span-2">
@@ -188,7 +210,7 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: Art
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3">
           <Button onClick={() => onCreateListing?.(artwork)} className="flex items-center">
-            <Store className="mr-2 h-4 w-4" />
+            <ShoppingCart className="mr-2 h-4 w-4" />
             Create Marketplace Listing
           </Button>
           <Button variant="outline" onClick={() => onEdit?.(artwork)} className="flex items-center">
@@ -198,6 +220,15 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing }: Art
           <Button variant="outline" onClick={() => onShare?.(artwork)} className="flex items-center">
             <Share className="mr-2 h-4 w-4" />
             Share
+          </Button>
+          <Button 
+            variant="destructive" 
+            onClick={() => deleteMutation.mutate(artwork.id)} 
+            disabled={deleteMutation.isPending}
+            className="flex items-center"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            {deleteMutation.isPending ? 'Deleting...' : 'Delete Artwork'}
           </Button>
         </div>
       </CardContent>

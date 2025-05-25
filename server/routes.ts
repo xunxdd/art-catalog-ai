@@ -358,6 +358,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete artwork (authenticated users - own artworks only)
+  app.delete("/api/artworks/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const artworkId = parseInt(req.params.id);
+      const userId = req.user?.claims?.sub || req.user?.id;
+      
+      const deleted = await storage.deleteArtwork(artworkId, userId);
+      if (!deleted) {
+        return res.status(404).json({ message: "Artwork not found or access denied" });
+      }
+      
+      res.json({ message: "Artwork deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting artwork:", error);
+      res.status(500).json({ message: "Failed to delete artwork" });
+    }
+  });
+
   // Create marketplace listing
   app.post("/api/marketplace/listings", isAuthenticated, async (req, res) => {
     try {
