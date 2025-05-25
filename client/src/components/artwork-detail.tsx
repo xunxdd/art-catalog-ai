@@ -75,6 +75,8 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
 
   const addPhotoMutation = useMutation({
     mutationFn: async ({ artworkId, file }: { artworkId: number; file: File }) => {
+      console.log('Starting photo upload mutation for artwork:', artworkId);
+      
       // Convert file to compressed base64 for upload (same method as main upload)
       const fileToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
@@ -114,7 +116,10 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
         });
       };
 
+      console.log('Converting file to base64...');
       const base64 = await fileToBase64(file);
+      console.log('Base64 conversion complete, making API request...');
+      
       const response = await apiRequest('POST', `/api/artworks/${artworkId}/add-photo`, {
         imageData: base64,
         fileName: file.name,
@@ -122,23 +127,29 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
         fileSize: file.size
       });
       
-      // Handle empty response or check if response has content
-      const text = await response.text();
-      try {
-        return text ? JSON.parse(text) : { success: true };
-      } catch {
-        return { success: true }; // If JSON parsing fails, assume success since we got 200
+      console.log('API request complete:', response.status);
+      
+      // Handle response properly
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
+      
+      const result = await response.json();
+      console.log('Photo upload result:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Photo upload successful:', data);
       toast({
         title: "Photo added",
         description: "Additional photo has been added to this artwork.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/user/artworks'] });
       queryClient.invalidateQueries({ queryKey: ['/api/artworks/recent'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/artworks/${artwork?.id}`] });
     },
     onError: (error: any) => {
+      console.error('Photo upload error:', error);
       toast({
         title: "Upload failed",
         description: error.message || "Failed to add photo",
@@ -173,6 +184,7 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
       return;
     }
 
+    console.log('Starting photo upload for artwork:', artwork.id, 'file:', file.name);
     addPhotoMutation.mutate({ artworkId: artwork.id, file });
     
     // Clear the input so the same file can be selected again
