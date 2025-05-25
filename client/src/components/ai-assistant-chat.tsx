@@ -501,14 +501,29 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = reader.result as string;
-        const base64 = result.split(',')[1];
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Much smaller compression - max 512px on longest side
+        const maxSize = 512;
+        const ratio = Math.min(maxSize / img.width, maxSize / img.height);
+        
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to JPEG with 50% quality for very small size
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+        const base64 = compressedDataUrl.split(',')[1];
+        console.log('AI Assistant compressed base64 length:', base64.length);
         resolve(base64);
       };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
+      
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
     });
   };
 

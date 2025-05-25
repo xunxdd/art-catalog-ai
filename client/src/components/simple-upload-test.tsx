@@ -83,8 +83,8 @@ export function SimpleUploadTest() {
       const img = new Image();
       
       img.onload = () => {
-        // Compress to max 1024px on longest side
-        const maxSize = 1024;
+        // Much smaller compression - max 512px on longest side
+        const maxSize = 512;
         const ratio = Math.min(maxSize / img.width, maxSize / img.height);
         
         canvas.width = img.width * ratio;
@@ -92,9 +92,10 @@ export function SimpleUploadTest() {
         
         ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
         
-        // Convert to JPEG with 80% quality for smaller size
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        // Convert to JPEG with 50% quality for very small size
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
         const base64 = compressedDataUrl.split(',')[1];
+        console.log('Compressed base64 length:', base64.length);
         resolve(base64);
       };
       
