@@ -96,10 +96,10 @@ export function RecentCatalog({ onSelectArtwork, onViewAll }: RecentCatalogProps
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {artworks.map((artwork) => (
-            <div
+            <Link
               key={artwork.id}
-              className="group cursor-pointer"
-              onClick={() => onSelectArtwork?.(artwork)}
+              href={`/artwork/${artwork.id}`}
+              className="group cursor-pointer block"
             >
               <div className="aspect-square rounded-lg overflow-hidden mb-3 bg-muted relative">
                 <img
@@ -132,7 +132,7 @@ export function RecentCatalog({ onSelectArtwork, onViewAll }: RecentCatalogProps
                   {artwork.aiAnalysisComplete ? 'Analyzed' : 'Processing'}
                 </Badge>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </CardContent>

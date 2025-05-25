@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Filter, Grid, List } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
+import { Link } from "wouter";
 import type { Artwork } from "@shared/schema";
 
 export default function Gallery() {
@@ -94,7 +95,8 @@ export default function Gallery() {
             : "space-y-4"
           }>
             {filteredArtworks.map((artwork) => (
-              <Card key={artwork.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+              <Link key={artwork.id} href={`/artwork/${artwork.id}`}>
+                <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                 {viewMode === "grid" ? (
                   <>
                     <div className="aspect-square">
@@ -154,6 +156,7 @@ export default function Gallery() {
                   </CardContent>
                 )}
               </Card>
+              </Link>
             ))}
           </div>
         )}
