@@ -121,7 +121,14 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
         fileType: file.type,
         fileSize: file.size
       });
-      return response.json();
+      
+      // Handle empty response or check if response has content
+      const text = await response.text();
+      try {
+        return text ? JSON.parse(text) : { success: true };
+      } catch {
+        return { success: true }; // If JSON parsing fails, assume success since we got 200
+      }
     },
     onSuccess: () => {
       toast({
