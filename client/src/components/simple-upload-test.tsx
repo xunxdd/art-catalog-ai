@@ -48,9 +48,13 @@ export function SimpleUploadTest() {
       const formData = new FormData();
       formData.append('image', file);
       
+      // Use the same fetch method as the rest of the app
       const response = await fetch('/api/artworks/upload', {
         method: 'POST',
-        credentials: 'include',
+        credentials: 'same-origin',
+        headers: {
+          // Don't set Content-Type, let browser set it for FormData
+        },
         body: formData,
       });
       
