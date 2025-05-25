@@ -334,6 +334,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add photo to existing artwork
+  app.post('/api/artworks/:id/add-photo', isAuthenticated, async (req: any, res) => {
+    try {
+      const artworkId = parseInt(req.params.id);
+      const { imageData, fileName, fileType, fileSize } = req.body;
+      const userId = req.user.claims?.sub || req.user.id;
+
+      if (!imageData) {
+        return res.status(400).json({ error: 'Image data is required' });
+      }
+
+      // Verify artwork belongs to user
+      const artwork = await storage.getArtwork(artworkId, userId);
+      if (!artwork) {
+        return res.status(404).json({ error: 'Artwork not found' });
+      }
+
+      // Convert base64 to buffer and process
+      const imageBuffer = Buffer.from(imageData, 'base64');
+      
+      // Compress image to 512px max width/height and 50% quality
+      const processedBuffer = await sharp(imageBuffer)
+        .resize(512, 512, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 50 })
+        .toBuffer();
+
+      const processedBase64 = processedBuffer.toString('base64');
+      const newImageUrl = `data:image/jpeg;base64,${processedBase64}`;
+
+      // Add to existing imageUrls array
+      const currentImageUrls = artwork.imageUrls || [];
+      const updatedImageUrls = [...currentImageUrls, newImageUrl];
+
+      await storage.updateArtwork(artworkId, {
+        imageUrls: updatedImageUrls
+      }, userId);
+
+      res.json({ 
+        success: true,
+        message: 'Photo added successfully',
+        totalImages: updatedImageUrls.length + 1 // +1 for main image
+      });
+    } catch (error) {
+      console.error('Add photo error:', error);
+      res.status(500).json({ error: 'Failed to add photo' });
+    }
+  });
+
   // Update artwork
   app.patch("/api/artworks/:id", async (req, res) => {
     try {

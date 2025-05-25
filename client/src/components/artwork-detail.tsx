@@ -1,12 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Expand, Heart, Store, Edit, Share, CheckCircle, RefreshCw, ShoppingCart, Trash2 } from "lucide-react";
+import { Expand, Heart, Store, Edit, Share, CheckCircle, RefreshCw, ShoppingCart, Trash2, Camera, Plus } from "lucide-react";
 import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ArtworkSlideshow } from "@/components/artwork-slideshow";
+import { useRef } from "react";
 import type { Artwork } from "@shared/schema";
 
 interface ArtworkDetailProps {
@@ -20,6 +21,7 @@ interface ArtworkDetailProps {
 export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDelete }: ArtworkDetailProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const reAnalyzeMutation = useMutation({
     mutationFn: async (artworkId: number) => {
@@ -70,6 +72,79 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
       });
     },
   });
+
+  const addPhotoMutation = useMutation({
+    mutationFn: async ({ artworkId, file }: { artworkId: number; file: File }) => {
+      // Convert file to base64 for upload
+      const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result.split(',')[1]); // Remove data:image/jpeg;base64, prefix
+          };
+          reader.onerror = reject;
+        });
+      };
+
+      const base64 = await fileToBase64(file);
+      const response = await apiRequest('POST', `/api/artworks/${artworkId}/add-photo`, {
+        imageData: base64,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Photo added",
+        description: "Additional photo has been added to this artwork.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/artworks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/artworks/recent'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to add photo",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddPhoto = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !artwork) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file (JPG, PNG, HEIC)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addPhotoMutation.mutate({ artworkId: artwork.id, file });
+    
+    // Clear the input so the same file can be selected again
+    event.target.value = '';
+  };
 
   if (!artwork) {
     return (
@@ -217,6 +292,15 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
             <Edit className="mr-2 h-4 w-4" />
             Edit Details
           </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleAddPhoto} 
+            disabled={addPhotoMutation.isPending}
+            className="flex items-center"
+          >
+            <Camera className="mr-2 h-4 w-4" />
+            {addPhotoMutation.isPending ? 'Adding...' : 'Add More Photos'}
+          </Button>
           <Button variant="outline" onClick={() => onShare?.(artwork)} className="flex items-center">
             <Share className="mr-2 h-4 w-4" />
             Share
@@ -231,6 +315,15 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
             {deleteMutation.isPending ? 'Deleting...' : 'Delete Artwork'}
           </Button>
         </div>
+
+        {/* Hidden file input for adding photos */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
       </CardContent>
     </Card>
   );
