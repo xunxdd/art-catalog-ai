@@ -75,16 +75,42 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
 
   const addPhotoMutation = useMutation({
     mutationFn: async ({ artworkId, file }: { artworkId: number; file: File }) => {
-      // Convert file to base64 for upload
+      // Convert file to compressed base64 for upload (same method as main upload)
       const fileToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
-          reader.onload = () => {
-            const result = reader.result as string;
-            resolve(result.split(',')[1]); // Remove data:image/jpeg;base64, prefix
+          // Create a canvas to compress the image before upload
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          
+          img.onload = () => {
+            // Calculate dimensions to fit within 512x512
+            const maxSize = 512;
+            let { width, height } = img;
+            
+            if (width > height) {
+              if (width > maxSize) {
+                height = (height * maxSize) / width;
+                width = maxSize;
+              }
+            } else {
+              if (height > maxSize) {
+                width = (width * maxSize) / height;
+                height = maxSize;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Draw and compress
+            ctx?.drawImage(img, 0, 0, width, height);
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5); // 50% quality
+            resolve(compressedDataUrl.split(',')[1]); // Remove prefix
           };
-          reader.onerror = reject;
+          
+          img.onerror = reject;
+          img.src = URL.createObjectURL(file);
         });
       };
 
