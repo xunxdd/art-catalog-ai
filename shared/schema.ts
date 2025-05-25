@@ -14,7 +14,8 @@ export const artworks = pgTable("artworks", {
   suggestedPrice: integer("suggested_price"), // price in cents
   description: text("description"),
   tags: text("tags").array(),
-  imageUrl: text("image_url").notNull(),
+  imageUrl: text("image_url").notNull(), // Primary/main image
+  imageUrls: text("image_urls").array(), // Additional images from different angles
   thumbnailUrl: text("thumbnail_url"),
   aiAnalysisComplete: boolean("ai_analysis_complete").default(false),
   marketplaceListed: boolean("marketplace_listed").default(false),

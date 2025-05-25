@@ -218,15 +218,24 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
   };
 
   const uploadMutation = useMutation({
-    mutationFn: async (file: File) => {
-      // Convert to base64 for better network compatibility
-      const base64 = await fileToBase64(file);
+    mutationFn: async (files: File[]) => {
+      // Convert main image and additional images to base64
+      const [mainFile, ...additionalFiles] = files;
+      const imageData = await fileToBase64(mainFile);
+      
+      // Process additional images from different angles
+      const additionalImages = [];
+      for (const file of additionalFiles) {
+        const base64 = await fileToBase64(file);
+        additionalImages.push(base64);
+      }
       
       const uploadData = {
-        imageData: base64,
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size
+        imageData,
+        additionalImages,
+        fileName: mainFile.name,
+        fileType: mainFile.type,
+        fileSize: mainFile.size
       };
       
       const response = await apiRequest("POST", "/api/artworks/upload-base64", uploadData);
@@ -274,12 +283,12 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
   const startUpload = () => {
     if (uploadedFiles.length > 0) {
       addAssistantMessage(
-        `🚀 **Uploading and analyzing** your artwork...\n\n🔍 **AI Analysis includes**:\n• Style and medium identification\n• Market value estimation\n• Professional description generation\n• Category and tag suggestions\n\nThis usually takes 10-30 seconds...`,
+        `🚀 **Uploading and analyzing** your ${uploadedFiles.length} photo${uploadedFiles.length > 1 ? 's' : ''}...\n\n🔍 **AI Analysis includes**:\n• Style and medium identification\n• Market value estimation\n• Professional description generation\n• Category and tag suggestions\n\nThis usually takes 10-30 seconds...`,
         []
       );
       
-      // Upload the first file (main artwork photo)
-      uploadMutation.mutate(uploadedFiles[0]);
+      // Upload ALL files - main photo plus additional angles
+      uploadMutation.mutate(uploadedFiles);
     }
   };
 
