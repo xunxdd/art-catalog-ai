@@ -8,8 +8,9 @@ import { MarketplaceListingDialog } from "@/components/marketplace-listing-dialo
 import { ArtworkEditDialog } from "@/components/artwork-edit-dialog";
 import { ArtworkShareDialog } from "@/components/artwork-share-dialog";
 import { AIAssistantChat } from "@/components/ai-assistant-chat";
+import { SimpleUploadTest } from "@/components/simple-upload-test";
 import { Button } from "@/components/ui/button";
-import { Bot } from "lucide-react";
+import { Bot, TestTube } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import type { Artwork } from "@shared/schema";
@@ -24,6 +25,7 @@ export default function Catalog() {
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [artworkToShare, setArtworkToShare] = useState<Artwork | null>(null);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [showUploadTest, setShowUploadTest] = useState(false);
   const { data: artworks } = useQuery<Artwork[]>({
     queryKey: ['/api/artworks/recent'],
   });
@@ -100,8 +102,16 @@ export default function Catalog() {
           />
         </div>
 
-        {/* Floating AI Assistant */}
-        <div className="fixed bottom-6 right-6 z-40">
+        {/* Floating Buttons */}
+        <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
+          <Button
+            size="lg"
+            variant="outline"
+            className="rounded-full h-14 w-14 shadow-lg"
+            onClick={() => setShowUploadTest(true)}
+          >
+            <TestTube className="h-6 w-6" />
+          </Button>
           <Button
             size="lg"
             className="rounded-full h-14 w-14 shadow-lg"
@@ -146,6 +156,25 @@ export default function Catalog() {
           open={showAIAssistant}
           onOpenChange={setShowAIAssistant}
         />
+
+        {/* Upload Test Dialog */}
+        {showUploadTest && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-semibold">Upload Test</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowUploadTest(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+              <SimpleUploadTest />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
