@@ -187,17 +187,26 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
   };
 
   const triggerCameraCapture = () => {
-    // For mobile devices, this will open the camera
+    // For mobile devices, this will open the camera directly
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = 'image/*';
-    input.setAttribute('capture', 'environment');
+    input.accept = 'image/*,image/heic,image/heif'; // Support iPhone HEIC format
+    input.setAttribute('capture', 'environment'); // Use back camera
+    input.multiple = true; // Allow multiple photos
+    input.style.display = 'none';
+    
     input.onchange = (e) => {
       const target = e.target as HTMLInputElement;
       if (target.files && target.files.length > 0) {
+        addUserMessage(`Took ${target.files.length} photo${target.files.length > 1 ? 's' : ''} with camera`);
         processFiles(Array.from(target.files));
       }
+      // Clean up
+      document.body.removeChild(input);
     };
+    
+    // Add to DOM temporarily for mobile compatibility
+    document.body.appendChild(input);
     input.click();
   };
 
@@ -211,10 +220,7 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
-      formData.append('artwork', file);
-      
-      // Add a unique identifier to ensure fresh upload
-      formData.append('uploadId', Date.now().toString());
+      formData.append('image', file); // Match server expectation
       
       const response = await apiRequest("POST", "/api/artworks/upload", formData);
       if (!response.ok) {
