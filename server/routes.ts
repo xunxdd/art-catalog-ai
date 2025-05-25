@@ -354,11 +354,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add photo to existing artwork
-  app.post('/api/artworks/:id/add-photo', isAuthenticated, async (req: any, res) => {
+  app.post('/api/artworks/:id/add-photo', async (req: any, res) => {
     try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+
       const artworkId = parseInt(req.params.id);
       const { imageData, fileName, fileType, fileSize } = req.body;
-      const userId = req.user.claims?.sub || req.user.id;
+      const userId = req.user.id;
 
       if (!imageData) {
         return res.status(400).json({ error: 'Image data is required' });
