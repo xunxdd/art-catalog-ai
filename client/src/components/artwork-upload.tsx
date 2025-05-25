@@ -6,6 +6,33 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
+// Base64 conversion with compression (same as test upload)
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      // Compress to max 512px and 50% quality
+      const maxSize = 512;
+      const ratio = Math.min(maxSize / img.width, maxSize / img.height);
+      
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      
+      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+      const base64 = compressedDataUrl.split(',')[1];
+      resolve(base64);
+    };
+    
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+};
+
 interface UploadResponse {
   id: number;
   title: string;
@@ -19,10 +46,18 @@ export function ArtworkUpload() {
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadResponse> => {
-      const formData = new FormData();
-      formData.append('image', file);
+      // Use the same Base64 method that works reliably
+      const base64 = await fileToBase64(file);
       
-      const response = await apiRequest('POST', '/api/artworks/upload', formData);
+      const uploadData = {
+        imageData: base64,
+        additionalImages: [], // No additional images for regular upload
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+      };
+      
+      const response = await apiRequest('POST', '/api/artworks/upload-base64', uploadData);
       return response.json();
     },
     onSuccess: (data) => {

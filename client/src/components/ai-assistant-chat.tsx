@@ -536,9 +536,22 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
     });
   };
 
+  // Cleanup when dialog closes
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      // Stop voice recognition when closing
+      if (isListening) {
+        stopListening();
+      }
+      // Clear any ongoing processes
+      setIsListening(false);
+    }
+    onOpenChange(newOpen);
+  };
+
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
