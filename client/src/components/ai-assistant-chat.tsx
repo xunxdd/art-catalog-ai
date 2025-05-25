@@ -212,7 +212,14 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('artwork', file);
+      
+      // Add a unique identifier to ensure fresh upload
+      formData.append('uploadId', Date.now().toString());
+      
       const response = await apiRequest("POST", "/api/artworks/upload", formData);
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
       return response.json();
     },
     onSuccess: (data) => {
@@ -220,7 +227,7 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
       queryClient.invalidateQueries({ queryKey: ["/api/artworks/recent"] });
       
       addAssistantMessage(
-        `✨ **Analysis Complete!** Here's what I found:\n\n🎨 **Title**: ${data.title}\n🖌️ **Medium**: ${data.medium || 'Analyzing...'}\n💵 **Suggested Price**: $${data.suggestedPrice || 'Calculating...'}\n⭐ **Condition**: ${data.condition || 'Excellent'}\n\nI've created your catalog entry with professional descriptions. What would you like to do next?`,
+        `Analysis Complete! Here's what I found: ${data.title || 'New Artwork'}, ${data.medium || 'Mixed Medium'}, Suggested Price: $${data.suggestedPrice || '150'}. Your catalog entry is ready!`,
         [
           { label: "Create Marketplace Listing", action: () => handleCreateListing(), variant: 'default' },
           { label: "Edit Details", action: () => handleEditDetails(), variant: 'outline' },
@@ -228,10 +235,11 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
         ]
       );
       setCurrentStep('complete');
+      setUploadedFiles([]); // Clear uploaded files after successful upload
     },
     onError: (error: any) => {
       addAssistantMessage(
-        `❌ **Upload Failed**: ${error.message}\n\nPlease try again with a different image or check your connection.`,
+        `Upload Failed: ${error.message}. Please try again with a different image or check your connection.`,
         [
           { label: "Try Again", action: () => setCurrentStep('uploading'), variant: 'default' }
         ]
@@ -414,6 +422,54 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
       const transcript = event.results[0][0].transcript;
       setInput(transcript);
       setIsListening(false);
+      
+      // Auto-submit the voice input immediately
+      setTimeout(() => {
+        if (transcript.trim()) {
+          // Stop current speech when user speaks
+          window.speechSynthesis.cancel();
+          setIsSpeaking(false);
+          
+          addUserMessage(transcript);
+          
+          // Process the voice command
+          const userInput = transcript.toLowerCase();
+          
+          if (userInput.includes('help') || userInput.includes('how')) {
+            addAssistantMessage(
+              "I'm here to help! I can guide you through photography, AI analysis, pricing, and selling. What specifically would you like help with?",
+              [
+                { label: "Start Photo Session", action: () => startPhotoSession(), variant: 'default' }
+              ]
+            );
+          } else if (userInput.includes('price') || userInput.includes('value')) {
+            addAssistantMessage(
+              "I analyze your artwork using similar sales, artist recognition, and market trends. To get an accurate price estimate, I'll need to see your artwork first. Ready to upload?",
+              [
+                { label: "Upload for Analysis", action: () => startPhotoSession(), variant: 'default' }
+              ]
+            );
+          } else if (userInput.includes('photo') || userInput.includes('camera') || userInput.includes('upload')) {
+            startPhotoSession();
+          } else if (userInput.includes('start') || userInput.includes('yes') || userInput.includes('go') || userInput.includes('begin')) {
+            startPhotoSession();
+          } else if (userInput.includes('stop') || userInput.includes('quiet') || userInput.includes('mute')) {
+            window.speechSynthesis.cancel();
+            setIsSpeaking(false);
+            addAssistantMessage("Got it, I'll be quiet now! You can still use the voice toggle button to turn me back on.", []);
+            setVoiceEnabled(false);
+          } else {
+            addAssistantMessage(
+              "I understand you're interested in artwork cataloging! I can help you photograph, analyze, and list your art for sale. Would you like to start with a photo session?",
+              [
+                { label: "Yes, let's start", action: () => startPhotoSession(), variant: 'default' }
+              ]
+            );
+          }
+          
+          setInput(""); // Clear the input
+        }
+      }, 500);
     };
 
     recognition.onerror = (event: any) => {
