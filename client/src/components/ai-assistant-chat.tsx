@@ -220,12 +220,20 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
   const uploadMutation = useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
-      formData.append('image', file); // Match server expectation
+      formData.append('image', file);
       
-      const response = await apiRequest("POST", "/api/artworks/upload", formData);
+      // Use fetch directly for better error handling
+      const response = await fetch("/api/artworks/upload", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      
       if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Upload failed: ${errorText}`);
       }
+      
       return response.json();
     },
     onSuccess: (data) => {
@@ -359,42 +367,31 @@ export function AIAssistantChat({ open, onOpenChange }: AIAssistantChatProps) {
     
     addUserMessage(input);
     
-    // Simple AI responses based on input
-    setTimeout(() => {
-      const userInput = input.toLowerCase();
-      
-      if (userInput.includes('help') || userInput.includes('how')) {
-        addAssistantMessage(
-          "I'm here to help! I can guide you through photography, AI analysis, pricing, and selling. What specifically would you like help with?",
-          [
-            { label: "Start Photo Session", action: () => startPhotoSession(), variant: 'default' }
-          ]
-        );
-      } else if (userInput.includes('price') || userInput.includes('value')) {
-        addAssistantMessage(
-          "I analyze your artwork using similar sales, artist recognition, and market trends. To get an accurate price estimate, I'll need to see your artwork first. Ready to upload?",
-          [
-            { label: "Upload for Analysis", action: () => startPhotoSession(), variant: 'default' }
-          ]
-        );
-      } else if (userInput.includes('photo') || userInput.includes('camera') || userInput.includes('upload')) {
-        startPhotoSession();
-      } else if (userInput.includes('start') || userInput.includes('yes') || userInput.includes('go') || userInput.includes('begin')) {
-        startPhotoSession();
-      } else if (userInput.includes('stop') || userInput.includes('quiet') || userInput.includes('mute')) {
-        window.speechSynthesis.cancel();
-        setIsSpeaking(false);
-        addAssistantMessage("Got it, I'll be quiet now! You can still use the voice toggle button to turn me back on.", []);
-        setVoiceEnabled(false);
-      } else {
-        addAssistantMessage(
-          "I understand you're interested in artwork cataloging! I can help you photograph, analyze, and list your art for sale. Would you like to start with a photo session?",
-          [
-            { label: "Yes, let's start", action: () => startPhotoSession(), variant: 'default' }
-          ]
-        );
-      }
-    }, 800);
+    // Process user input immediately
+    const userInput = input.toLowerCase();
+    
+    if (userInput.includes('start') || userInput.includes('yes') || userInput.includes('go') || userInput.includes('begin') || userInput.includes('photo') || userInput.includes('camera') || userInput.includes('upload')) {
+      startPhotoSession();
+    } else if (userInput.includes('stop') || userInput.includes('quiet') || userInput.includes('mute')) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      addAssistantMessage("Voice disabled. Use the speaker button to turn me back on.");
+      setVoiceEnabled(false);
+    } else if (userInput.includes('help') || userInput.includes('how')) {
+      addAssistantMessage(
+        "I can guide you through photography and artwork analysis. Say 'start' to begin!",
+        [
+          { label: "Start Photo Session", action: () => startPhotoSession(), variant: 'default' }
+        ]
+      );
+    } else {
+      addAssistantMessage(
+        "Ready to catalog your artwork! Say 'start' or click the button below.",
+        [
+          { label: "Start Photo Session", action: () => startPhotoSession(), variant: 'default' }
+        ]
+      );
+    }
     
     setInput("");
   };
