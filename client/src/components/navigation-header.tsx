@@ -109,9 +109,8 @@ export function NavigationHeader() {
               </SheetContent>
             </Sheet>
 
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center">
               <Camera className="text-primary h-8 w-8" />
-              <h1 className="text-xl font-bold text-foreground">ArtCatalogAI</h1>
             </Link>
             <nav className="hidden md:flex space-x-8 ml-8">
               <Link href="/" className={`font-medium transition-colors ${
