@@ -71,9 +71,6 @@ export default function LandingPage() {
                   Start Cataloging Free
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-                View Demo Gallery
-              </Button>
             </div>
             
             {/* Quick Stats */}
