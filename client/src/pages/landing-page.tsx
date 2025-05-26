@@ -26,9 +26,7 @@ export default function LandingPage() {
           </div>
           
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/gallery">
-              <Button variant="ghost">Browse Gallery</Button>
-            </Link>
+            {/* Navigation items can be added here later */}
           </nav>
           
           <div className="flex items-center space-x-2">
