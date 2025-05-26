@@ -72,12 +72,13 @@ export function ArtworkEditDialog({ artwork, open, onOpenChange }: ArtworkEditDi
 
   const updateArtworkMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("PUT", `/api/artworks/${artwork?.id}`, data);
+      const response = await apiRequest("PATCH", `/api/artworks/${artwork?.id}`, data);
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/artworks"] });
       queryClient.invalidateQueries({ queryKey: ["/api/artworks/recent"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/artworks/${artwork?.id}`] });
       toast({
         title: "Artwork Updated!",
         description: `"${editData.title}" has been updated successfully.`,
