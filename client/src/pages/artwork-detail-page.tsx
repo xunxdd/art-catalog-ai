@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRoute } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { NavigationHeader } from "@/components/navigation-header";
 import { ArtworkSlideshow } from "@/components/artwork-slideshow";
 import { Button } from "@/components/ui/button";
@@ -8,17 +8,118 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Edit, Share, ShoppingCart, Trash2, Camera } from "lucide-react";
 import { formatPrice, getStatusColor } from "@/lib/utils";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import type { Artwork } from "@shared/schema";
 
 export default function ArtworkDetailPage() {
   const [match, params] = useRoute("/artwork/:id");
   const artworkId = params?.id ? parseInt(params.id) : null;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const { data: artwork, isLoading } = useQuery<Artwork>({
     queryKey: [`/api/artworks/${artworkId}`],
     enabled: !!artworkId,
   });
+
+  const addPhotoMutation = useMutation({
+    mutationFn: async ({ artworkId, file }: { artworkId: number; file: File }) => {
+      // Convert file to compressed base64 for upload
+      const fileToBase64 = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          
+          img.onload = () => {
+            const maxSize = 512;
+            let { width, height } = img;
+            
+            if (width > height) {
+              if (width > maxSize) {
+                height = (height * maxSize) / width;
+                width = maxSize;
+              }
+            } else {
+              if (height > maxSize) {
+                width = (width * maxSize) / height;
+                height = maxSize;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx?.drawImage(img, 0, 0, width, height);
+            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+            resolve(compressedDataUrl.split(',')[1]);
+          };
+          
+          img.onerror = reject;
+          img.src = URL.createObjectURL(file);
+        });
+      };
+
+      const base64 = await fileToBase64(file);
+      const response = await apiRequest('POST', `/api/artworks/${artworkId}/add-photo`, {
+        imageData: base64,
+        fileName: file.name,
+        fileType: file.type,
+        fileSize: file.size
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Photo added",
+        description: "Additional photo has been added to this artwork.",
+      });
+      queryClient.invalidateQueries({ queryKey: [`/api/artworks/${artworkId}`] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to add photo",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddPhoto = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !artwork) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file (JPG, PNG, HEIC)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addPhotoMutation.mutate({ artworkId: artwork.id, file });
+    event.target.value = '';
+  };
 
   if (!match || !artworkId) {
     return (
@@ -164,9 +265,14 @@ export default function ArtworkDetailPage() {
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Create Listing
               </Button>
-              <Button variant="outline" className="flex items-center">
+              <Button 
+                variant="outline" 
+                className="flex items-center"
+                onClick={handleAddPhoto}
+                disabled={addPhotoMutation.isPending}
+              >
                 <Camera className="mr-2 h-4 w-4" />
-                Add More Photos
+                {addPhotoMutation.isPending ? 'Adding...' : 'Add More Photos'}
               </Button>
               <Button variant="outline" className="flex items-center">
                 <Edit className="mr-2 h-4 w-4" />
@@ -177,6 +283,15 @@ export default function ArtworkDetailPage() {
                 Share
               </Button>
             </div>
+            
+            {/* Hidden file input for photo upload */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              accept="image/*"
+              className="hidden"
+            />
           </div>
         </div>
       </div>
