@@ -7,9 +7,10 @@ interface ArtworkSlideshowProps {
   images: string[];
   title: string;
   className?: string;
+  showThumbnails?: boolean;
 }
 
-export function ArtworkSlideshow({ images, title, className = "" }: ArtworkSlideshowProps) {
+export function ArtworkSlideshow({ images, title, className = "", showThumbnails = true }: ArtworkSlideshowProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   if (!images || images.length === 0) {
@@ -75,8 +76,8 @@ export function ArtworkSlideshow({ images, title, className = "" }: ArtworkSlide
         </div>
       )}
 
-      {/* Thumbnail Navigation - only show if more than 1 image */}
-      {images.length > 1 && (
+      {/* Thumbnail Navigation - only show if more than 1 image and thumbnails are enabled */}
+      {images.length > 1 && showThumbnails && (
         <div className="mt-3 flex gap-2 overflow-x-auto pb-2">
           {images.map((image, index) => (
             <button

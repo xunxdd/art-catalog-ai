@@ -213,6 +213,7 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
           images={[artwork.imageUrl, ...(artwork.imageUrls || [])]}
           title={artwork.title}
           className="h-80"
+          showThumbnails={false}
         />
         
         <div className="absolute top-4 right-4 flex space-x-2">
