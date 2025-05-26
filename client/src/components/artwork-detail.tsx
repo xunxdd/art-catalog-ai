@@ -229,35 +229,39 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
           </Button>
         </div>
         
-        {/* AI Analysis Status */}
+        {/* Show either Analysis Status or Re-analyze Button, not both */}
         <div className="absolute bottom-4 left-4">
-          <Badge className={artwork.aiAnalysisComplete ? "bg-green-600 hover:bg-green-700" : "bg-yellow-600 hover:bg-yellow-700"}>
-            {artwork.aiAnalysisComplete ? (
-              <>
-                <CheckCircle className="mr-2 h-3 w-3" />
-                AI Analysis Complete
-              </>
-            ) : (
-              "Analyzing..."
-            )}
-          </Badge>
-        </div>
-
-        {/* Re-analyze Button for Failed Analysis */}
-        {analysisFailedOrIncomplete && (
-          <div className="absolute bottom-4 right-4">
+          {artwork.aiAnalysisComplete ? (
+            <Badge className="bg-green-600 hover:bg-green-700">
+              <CheckCircle className="mr-2 h-3 w-3" />
+              AI Analysis Complete
+            </Badge>
+          ) : reAnalyzeMutation.isPending ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={true}
+              className="bg-black/50 text-white"
+            >
+              <RefreshCw className="mr-2 h-3 w-3 animate-spin" />
+              Re-analyzing...
+            </Button>
+          ) : analysisFailedOrIncomplete ? (
             <Button
               size="sm"
               variant="secondary"
               onClick={() => reAnalyzeMutation.mutate(artwork.id)}
-              disabled={reAnalyzeMutation.isPending}
               className="bg-black/50 hover:bg-black/70 text-white"
             >
-              <RefreshCw className={`mr-2 h-3 w-3 ${reAnalyzeMutation.isPending ? 'animate-spin' : ''}`} />
-              {reAnalyzeMutation.isPending ? 'Re-analyzing...' : 'Re-analyze'}
+              <RefreshCw className="mr-2 h-3 w-3" />
+              Re-analyze
             </Button>
-          </div>
-        )}
+          ) : (
+            <Badge className="bg-yellow-600 hover:bg-yellow-700">
+              Analyzing...
+            </Badge>
+          )}
+        </div>
       </div>
       
       {/* Artwork Details */}
