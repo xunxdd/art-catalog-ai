@@ -29,8 +29,6 @@ export default function LandingPage() {
             <Link href="/gallery">
               <Button variant="ghost">Browse Gallery</Button>
             </Link>
-            <Button variant="ghost">Features</Button>
-            <Button variant="ghost">Pricing</Button>
           </nav>
           
           <div className="flex items-center space-x-2">
