@@ -6,12 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
+import { useLocation } from "wouter";
+import { queryClient } from "@/lib/queryClient";
 
 interface AuthFormsProps {
   onSuccess?: () => void;
 }
 
 export function AuthForms({ onSuccess }: AuthFormsProps) {
+  const [, setLocation] = useLocation();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -44,8 +47,13 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
         throw new Error(errorData.message || 'Authentication failed');
       }
 
-      // Success - reload page to trigger auth state update
-      window.location.reload();
+      // Success - invalidate auth queries and redirect to home
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        setLocation('/');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Authentication failed');
     } finally {
