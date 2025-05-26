@@ -77,14 +77,14 @@ export function ArtworkSlideshow({ images, title, className = "" }: ArtworkSlide
 
       {/* Thumbnail Navigation - only show if more than 1 image */}
       {images.length > 1 && (
-        <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+        <div className="absolute bottom-2 left-2 right-2 flex gap-1 overflow-x-auto bg-black/50 rounded p-1 backdrop-blur-sm">
           {images.map((image, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`flex-shrink-0 w-12 h-12 rounded overflow-hidden border-2 transition-colors ${
+              className={`flex-shrink-0 w-8 h-8 rounded overflow-hidden border transition-colors ${
                 index === currentIndex 
-                  ? 'border-primary' 
+                  ? 'border-white border-2' 
                   : 'border-transparent hover:border-gray-300'
               }`}
             >

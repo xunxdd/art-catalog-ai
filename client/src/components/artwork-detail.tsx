@@ -208,7 +208,7 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
   return (
     <Card className="lg:col-span-2 overflow-hidden">
       {/* Artwork Images with Slideshow */}
-      <div className="relative">
+      <div className="relative mb-4">
         <ArtworkSlideshow 
           images={[artwork.imageUrl, ...(artwork.imageUrls || [])]}
           title={artwork.title}
