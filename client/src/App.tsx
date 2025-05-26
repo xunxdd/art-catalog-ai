@@ -33,7 +33,9 @@ function Router() {
     return (
       <Switch>
         <Route path="/" component={LandingPage} />
-        <Route path="/auth" component={AuthForms} />
+        <Route path="/auth">
+          <AuthForms />
+        </Route>
         <Route path="/gallery" component={Gallery} />
         <Route component={LandingPage} />
       </Switch>
