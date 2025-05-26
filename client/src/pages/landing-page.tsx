@@ -22,7 +22,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Camera className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl">ArtCatalog</span>
+            <span className="font-bold text-xl">ArtCatalogAI</span>
           </div>
           
           <nav className="hidden md:flex items-center space-x-6">

@@ -17,7 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Link, useLocation } from "wouter";
-import { Palette, Search, Bell, User, LogOut, Settings, Shield, Menu } from "lucide-react";
+import { Camera, Search, Bell, User, LogOut, Settings, Shield, Menu } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 
@@ -43,8 +43,8 @@ export function NavigationHeader() {
               <SheetContent side="left" className="w-64">
                 <SheetHeader>
                   <SheetTitle className="flex items-center space-x-2 text-left">
-                    <Palette className="text-primary h-6 w-6" />
-                    <span>ArtCatalog AI</span>
+                    <Camera className="text-primary h-6 w-6" />
+                    <span>ArtCatalogAI</span>
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col space-y-4 mt-6">
@@ -110,8 +110,8 @@ export function NavigationHeader() {
             </Sheet>
 
             <Link href="/" className="flex items-center space-x-2">
-              <Palette className="text-primary h-8 w-8" />
-              <h1 className="text-xl font-bold text-foreground">ArtCatalog AI</h1>
+              <Camera className="text-primary h-8 w-8" />
+              <h1 className="text-xl font-bold text-foreground">ArtCatalogAI</h1>
             </Link>
             <nav className="hidden md:flex space-x-8 ml-8">
               <Link href="/" className={`font-medium transition-colors ${
