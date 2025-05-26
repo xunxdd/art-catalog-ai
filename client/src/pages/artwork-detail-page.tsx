@@ -3,6 +3,7 @@ import { useRoute } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { NavigationHeader } from "@/components/navigation-header";
 import { ArtworkSlideshow } from "@/components/artwork-slideshow";
+import { ArtworkEditDialog } from "@/components/artwork-edit-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,6 +18,7 @@ export default function ArtworkDetailPage() {
   const [match, params] = useRoute("/artwork/:id");
   const artworkId = params?.id ? parseInt(params.id) : null;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: artwork, isLoading } = useQuery<Artwork>({
@@ -129,10 +131,7 @@ export default function ArtworkDetailPage() {
   };
 
   const handleEditDetails = () => {
-    toast({
-      title: "Edit Details",
-      description: "Edit artwork details feature coming soon!",
-    });
+    setEditDialogOpen(true);
   };
 
   const handleShare = () => {
@@ -333,6 +332,13 @@ export default function ArtworkDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Dialog */}
+      <ArtworkEditDialog
+        artwork={artwork}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+      />
     </div>
   );
 }
