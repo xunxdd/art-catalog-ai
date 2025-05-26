@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthForms } from "@/components/auth-forms";
+import LandingPage from "@/pages/landing-page";
 import Catalog from "@/pages/catalog";
 import Gallery from "@/pages/gallery";
 import Analytics from "@/pages/analytics";
@@ -29,7 +30,14 @@ function Router() {
   }
 
   if (!isAuthenticated) {
-    return <AuthForms />;
+    return (
+      <Switch>
+        <Route path="/" component={LandingPage} />
+        <Route path="/auth" component={AuthForms} />
+        <Route path="/gallery" component={Gallery} />
+        <Route component={LandingPage} />
+      </Switch>
+    );
   }
 
   return (
