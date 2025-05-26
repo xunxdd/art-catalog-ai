@@ -1,21 +1,23 @@
 import { useState } from "react";
-import { NavigationHeader } from "@/components/navigation-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, Grid, List } from "lucide-react";
+import { Search, Filter, Grid, List, Camera, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
 import { Link } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
+import { NavigationHeader } from "@/components/navigation-header";
 import type { Artwork } from "@shared/schema";
 
 export default function Gallery() {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const { isAuthenticated } = useAuth();
 
   const { data: artworks, isLoading } = useQuery<Artwork[]>({
-    queryKey: ['/api/user/artworks'],
+    queryKey: ['/api/artworks/recent'],
   });
 
   const filteredArtworks = artworks?.filter(artwork =>
@@ -26,7 +28,31 @@ export default function Gallery() {
 
   return (
     <div className="min-h-screen bg-background">
-      <NavigationHeader />
+      {isAuthenticated ? (
+        <NavigationHeader />
+      ) : (
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+            <Link href="/" className="flex items-center space-x-2">
+              <Camera className="h-8 w-8 text-primary" />
+              <span className="font-bold text-xl">ArtCatalogAI</span>
+            </Link>
+            <div className="flex items-center space-x-2">
+              <Link href="/">
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Home
+                </Button>
+              </Link>
+              <Link href="/auth">
+                <Button size="sm">
+                  Sign Up Free
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </header>
+      )}
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
