@@ -121,6 +121,44 @@ export default function ArtworkDetailPage() {
     event.target.value = '';
   };
 
+  const handleCreateListing = () => {
+    toast({
+      title: "Create Listing",
+      description: "Marketplace listing feature coming soon!",
+    });
+  };
+
+  const handleEditDetails = () => {
+    toast({
+      title: "Edit Details",
+      description: "Edit artwork details feature coming soon!",
+    });
+  };
+
+  const handleShare = () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: artwork?.title || 'Artwork',
+        text: `Check out this artwork: ${artwork?.title}`,
+        url: url,
+      });
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(url).then(() => {
+        toast({
+          title: "Link copied",
+          description: "Artwork link copied to clipboard!",
+        });
+      }).catch(() => {
+        toast({
+          title: "Share",
+          description: `Share this artwork: ${url}`,
+        });
+      });
+    }
+  };
+
   if (!match || !artworkId) {
     return (
       <div className="min-h-screen bg-background">
@@ -261,7 +299,7 @@ export default function ArtworkDetailPage() {
 
             {/* Action Buttons */}
             <div className="flex flex-wrap gap-3">
-              <Button className="flex items-center">
+              <Button className="flex items-center" onClick={handleCreateListing}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
                 Create Listing
               </Button>
@@ -274,11 +312,11 @@ export default function ArtworkDetailPage() {
                 <Camera className="mr-2 h-4 w-4" />
                 {addPhotoMutation.isPending ? 'Adding...' : 'Add More Photos'}
               </Button>
-              <Button variant="outline" className="flex items-center">
+              <Button variant="outline" className="flex items-center" onClick={handleEditDetails}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Details
               </Button>
-              <Button variant="outline" className="flex items-center">
+              <Button variant="outline" className="flex items-center" onClick={handleShare}>
                 <Share className="mr-2 h-4 w-4" />
                 Share
               </Button>
