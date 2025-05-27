@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
 import { useLocation } from "wouter";
-import { queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AuthFormsProps {
   onSuccess?: () => void;

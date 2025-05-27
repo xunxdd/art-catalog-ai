@@ -14,8 +14,7 @@ import type { Artwork } from "@shared/schema";
 export default function Gallery() {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const { isAuthenticated } = useAuth();
-
+  // Public gallery - no authentication required
   const { data: artworks, isLoading } = useQuery<Artwork[]>({
     queryKey: ['/api/artworks/recent'],
     retry: false,
@@ -29,31 +28,28 @@ export default function Gallery() {
 
   return (
     <div className="min-h-screen bg-background">
-      {isAuthenticated ? (
-        <NavigationHeader />
-      ) : (
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
-              <Camera className="h-8 w-8 text-primary" />
-              <span className="font-bold text-xl">ArtCatalogAI</span>
+      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center space-x-2">
+            <Camera className="h-8 w-8 text-primary" />
+            <span className="font-bold text-xl">ArtCatalogAI</span>
+          </Link>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-lg font-semibold">Public Art Gallery</h1>
+            <Link href="/">
+              <Button variant="ghost" size="sm">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Home
+              </Button>
             </Link>
-            <div className="flex items-center space-x-2">
-              <Link href="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Home
-                </Button>
-              </Link>
-              <Link href="/auth">
-                <Button size="sm">
-                  Sign Up Free
-                </Button>
-              </Link>
-            </div>
+            <Link href="/auth">
+              <Button size="sm">
+                Sign Up Free
+              </Button>
+            </Link>
           </div>
-        </header>
-      )}
+        </div>
+      </header>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
