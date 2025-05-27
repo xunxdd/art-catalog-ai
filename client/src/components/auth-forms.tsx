@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, Camera } from "lucide-react";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
 import { useLocation } from "wouter";
+import { Link } from "wouter";
 import { queryClient } from "@/lib/queryClient";
 
 interface AuthFormsProps {
@@ -78,7 +79,13 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 p-4">
+      {/* Brand Logo/Title - Links back to home */}
+      <Link href="/" className="mb-8 flex items-center space-x-2 hover:opacity-80 transition-opacity">
+        <Camera className="h-8 w-8 text-primary" />
+        <span className="font-bold text-2xl">ArtCatalogAI</span>
+      </Link>
+      
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
