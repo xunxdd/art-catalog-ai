@@ -21,7 +21,9 @@ function Router() {
 
   return (
     <Switch>
-      <Route path="/" component={LandingPage} />
+      <Route path="/">
+        {isAuthenticated ? <Catalog /> : <LandingPage />}
+      </Route>
       <Route path="/auth">
         <AuthForms />
       </Route>
@@ -46,20 +48,6 @@ function Router() {
           </div>
         </Route>
       )}
-      <Route component={LandingPage} />
-    </Switch>
-  );
-
-  return (
-    <Switch>
-      <Route path="/" component={Catalog} />
-      <Route path="/catalog" component={Catalog} />
-      <Route path="/artwork/:id" component={ArtworkDetailPage} />
-      <Route path="/gallery" component={Gallery} />
-      <Route path="/analytics" component={Analytics} />
-      <Route path="/marketplace" component={Marketplace} />
-      <Route path="/account" component={AccountSettings} />
-      {isAdmin && <Route path="/admin" component={AdminDashboard} />}
       <Route component={NotFound} />
     </Switch>
   );
