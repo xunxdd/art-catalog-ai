@@ -1,14 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Expand, Heart, Store, Edit, Share, CheckCircle, RefreshCw, ShoppingCart, Trash2, Camera, Plus, Eye, EyeOff } from "lucide-react";
+import { Expand, Heart, Store, Edit, Share, CheckCircle, RefreshCw, ShoppingCart, Trash2, Camera, Plus } from "lucide-react";
 import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ArtworkSlideshow } from "@/components/artwork-slideshow";
+import { ArtworkVisibilityControl } from "@/components/artwork-visibility-control";
 import { useRef } from "react";
 import type { Artwork } from "@shared/schema";
 
@@ -41,28 +40,6 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
       toast({
         title: "Re-analysis failed",
         description: error.message || "Failed to restart analysis",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const visibilityMutation = useMutation({
-    mutationFn: async ({ artworkId, visibility }: { artworkId: number; visibility: string }) => {
-      const response = await apiRequest('PATCH', `/api/artworks/${artworkId}`, { visibility });
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Visibility updated",
-        description: "Artwork visibility has been changed",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/artworks'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/user/artworks'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Update failed",
-        description: error.message || "Failed to update visibility",
         variant: "destructive",
       });
     },
@@ -307,38 +284,7 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
         </div>
 
         {/* Visibility Control */}
-        <div className="mb-6 p-4 border border-gray-300 rounded-lg bg-gray-50">
-          <div className="text-sm font-medium mb-3">Visibility Settings</div>
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => visibilityMutation.mutate({ artworkId: artwork.id, visibility: 'public' })}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-                artwork.visibility === 'public' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-              disabled={visibilityMutation.isPending}
-            >
-              <Eye className="h-4 w-4" />
-              Public
-            </button>
-            <button 
-              onClick={() => visibilityMutation.mutate({ artworkId: artwork.id, visibility: 'private' })}
-              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-                artwork.visibility === 'private' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-              disabled={visibilityMutation.isPending}
-            >
-              <EyeOff className="h-4 w-4" />
-              Private
-            </button>
-          </div>
-          <div className="text-xs text-gray-600 mt-2">
-            Current: {artwork.visibility || 'public'} - {artwork.visibility === 'public' ? 'Visible in gallery' : 'Only visible to you'}
-          </div>
-        </div>
+        <ArtworkVisibilityControl artwork={artwork} className="mb-6" />
         
         {/* Artwork Specifications */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

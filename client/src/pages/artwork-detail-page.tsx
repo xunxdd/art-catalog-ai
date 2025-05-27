@@ -4,10 +4,11 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { NavigationHeader } from "@/components/navigation-header";
 import { ArtworkSlideshow } from "@/components/artwork-slideshow";
 import { ArtworkEditDialog } from "@/components/artwork-edit-dialog";
+import { ArtworkVisibilityControl } from "@/components/artwork-visibility-control";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Edit, Share, ShoppingCart, Trash2, Camera, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Edit, Share, ShoppingCart, Trash2, Camera } from "lucide-react";
 import { formatPrice, getStatusColor } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -24,27 +25,6 @@ export default function ArtworkDetailPage() {
   const { data: artwork, isLoading } = useQuery<Artwork>({
     queryKey: [`/api/artworks/${artworkId}`],
     enabled: !!artworkId,
-  });
-
-  const visibilityMutation = useMutation({
-    mutationFn: async ({ artworkId, visibility }: { artworkId: number; visibility: string }) => {
-      const response = await apiRequest('PATCH', `/api/artworks/${artworkId}`, { visibility });
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Visibility updated",
-        description: "Artwork visibility has been changed",
-      });
-      queryClient.invalidateQueries({ queryKey: [`/api/artworks/${artworkId}`] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Update failed",
-        description: error.message || "Failed to update visibility",
-        variant: "destructive",
-      });
-    },
   });
 
   const addPhotoMutation = useMutation({
@@ -267,38 +247,7 @@ export default function ArtworkDetailPage() {
             </div>
 
             {/* Visibility Control */}
-            <div className="p-4 border border-gray-300 rounded-lg bg-gray-50">
-              <div className="text-sm font-medium mb-3">Visibility Settings</div>
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => visibilityMutation.mutate({ artworkId: artwork.id, visibility: 'public' })}
-                  className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-                    artwork.visibility === 'public' 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                  disabled={visibilityMutation.isPending}
-                >
-                  <Eye className="h-4 w-4" />
-                  Public
-                </button>
-                <button 
-                  onClick={() => visibilityMutation.mutate({ artworkId: artwork.id, visibility: 'private' })}
-                  className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-                    artwork.visibility === 'private' 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                  disabled={visibilityMutation.isPending}
-                >
-                  <EyeOff className="h-4 w-4" />
-                  Private
-                </button>
-              </div>
-              <div className="text-xs text-gray-600 mt-2">
-                Current: {artwork.visibility || 'public'} - {artwork.visibility === 'public' ? 'Visible in gallery' : 'Only visible to you'}
-              </div>
-            </div>
+            <ArtworkVisibilityControl artwork={artwork} />
 
             {/* Specifications */}
             <Card>
