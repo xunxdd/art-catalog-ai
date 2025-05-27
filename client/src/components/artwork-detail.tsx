@@ -307,47 +307,37 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
         </div>
 
         {/* Visibility Control */}
-        <div className="mb-6">
-          <Label htmlFor="visibility" className="text-sm font-medium mb-2 block">
-            Visibility
-          </Label>
-          <Select 
-            value={artwork.visibility || 'public'} 
-            onValueChange={(value) => visibilityMutation.mutate({ artworkId: artwork.id, visibility: value })}
-            disabled={visibilityMutation.isPending}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue>
-                <div className="flex items-center gap-2">
-                  {artwork.visibility === 'public' ? (
-                    <>
-                      <Eye className="h-4 w-4" />
-                      Public - Visible in gallery
-                    </>
-                  ) : (
-                    <>
-                      <EyeOff className="h-4 w-4" />
-                      Private - Only visible to you
-                    </>
-                  )}
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="private">
-                <div className="flex items-center gap-2">
-                  <EyeOff className="h-4 w-4" />
-                  Private - Only visible to you
-                </div>
-              </SelectItem>
-              <SelectItem value="public">
-                <div className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  Public - Visible in gallery
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="mb-6 p-4 border border-gray-300 rounded-lg bg-gray-50">
+          <div className="text-sm font-medium mb-3">Visibility Settings</div>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => visibilityMutation.mutate({ artworkId: artwork.id, visibility: 'public' })}
+              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
+                artwork.visibility === 'public' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+              disabled={visibilityMutation.isPending}
+            >
+              <Eye className="h-4 w-4" />
+              Public
+            </button>
+            <button 
+              onClick={() => visibilityMutation.mutate({ artworkId: artwork.id, visibility: 'private' })}
+              className={`px-4 py-2 rounded-md flex items-center gap-2 ${
+                artwork.visibility === 'private' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+              disabled={visibilityMutation.isPending}
+            >
+              <EyeOff className="h-4 w-4" />
+              Private
+            </button>
+          </div>
+          <div className="text-xs text-gray-600 mt-2">
+            Current: {artwork.visibility || 'public'} - {artwork.visibility === 'public' ? 'Visible in gallery' : 'Only visible to you'}
+          </div>
         </div>
         
         {/* Artwork Specifications */}
