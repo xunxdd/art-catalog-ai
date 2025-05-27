@@ -125,17 +125,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/showroom/artworks", async (req: any, res) => {
     try {
       let userId;
+      
+      // Check if user is authenticated
       if (req.isAuthenticated && req.isAuthenticated()) {
+        // Try to get user ID from either auth method
         if (req.user?.claims?.sub) {
           userId = req.user.claims.sub;
         } else if (req.user?.id) {
           userId = req.user.id;
         }
+        console.log('Showroom: Authenticated user ID:', userId);
+      } else {
+        console.log('Showroom: Anonymous user - showing all public artworks');
       }
       
       const artworks = await storage.getShowroomArtworks(50, userId);
+      console.log('Showroom: Found', artworks.length, 'artworks for user:', userId || 'anonymous');
       res.json(artworks);
     } catch (error) {
+      console.error('Showroom error:', error);
       res.status(500).json({ message: "Failed to fetch showroom artworks" });
     }
   });
