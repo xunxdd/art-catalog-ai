@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Camera, Zap, ShoppingCart, TrendingUp, Users, Clock, Award, Menu, LogIn, UserPlus } from "lucide-react";
+import { Camera, Zap, ShoppingCart, TrendingUp, Users, Clock, Award, Menu, LogIn, UserPlus, Images } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatPrice, getImageUrl } from "@/lib/utils";
 import { Link } from "wouter";
@@ -69,6 +69,12 @@ export default function LandingPage() {
                 <Button size="lg" className="text-lg px-8 py-6">
                   <Camera className="mr-2 h-5 w-5" />
                   Start Cataloging Free
+                </Button>
+              </Link>
+              <Link href="/showroom">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                  <Images className="mr-2 h-5 w-5" />
+                  Show Room
                 </Button>
               </Link>
             </div>
