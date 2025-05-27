@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Camera, Zap, ShoppingCart, TrendingUp, Users, Clock, Award, Menu, LogIn, UserPlus, Images } from "lucide-react";
+import { Camera, Zap, ShoppingCart, TrendingUp, Users, Clock, Award, Menu, Images } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatPrice, getImageUrl } from "@/lib/utils";
 import { Link } from "wouter";
+import { SimpleNav } from "@/components/simple-nav";
 import type { Artwork } from "@shared/schema";
 
 export default function LandingPage() {
@@ -17,34 +18,8 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Camera className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl">ArtCatalogAI</span>
-          </div>
-          
-          <nav className="hidden md:flex items-center space-x-6">
-            {/* Navigation items can be added here later */}
-          </nav>
-          
-          <div className="flex items-center space-x-2">
-            <Link href="/auth">
-              <Button variant="ghost" size="sm">
-                <LogIn className="mr-2 h-4 w-4" />
-                Log In
-              </Button>
-            </Link>
-            <Link href="/auth">
-              <Button size="sm">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Sign Up
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Use shared navigation component */}
+      <SimpleNav />
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-secondary/10">
         <div className="container mx-auto px-4 py-20">
