@@ -1,7 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Expand, Heart, Store, Edit, Share, CheckCircle, RefreshCw, ShoppingCart, Trash2, Camera, Plus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Expand, Heart, Store, Edit, Share, CheckCircle, RefreshCw, ShoppingCart, Trash2, Camera, Plus, Eye, EyeOff } from "lucide-react";
 import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -39,6 +41,28 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
       toast({
         title: "Re-analysis failed",
         description: error.message || "Failed to restart analysis",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const visibilityMutation = useMutation({
+    mutationFn: async ({ artworkId, visibility }: { artworkId: number; visibility: string }) => {
+      const response = await apiRequest('PATCH', `/api/artworks/${artworkId}`, { visibility });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Visibility updated",
+        description: "Artwork visibility has been changed",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/artworks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/artworks'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update failed",
+        description: error.message || "Failed to update visibility",
         variant: "destructive",
       });
     },
@@ -302,6 +326,56 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
               {artwork.condition || 'Unknown'}
             </div>
           </div>
+        </div>
+
+        {/* Visibility Control */}
+        <div className="mb-6">
+          <Label htmlFor="visibility" className="text-sm font-medium mb-2 block">
+            Visibility
+          </Label>
+          <Select 
+            value={artwork.visibility || 'private'} 
+            onValueChange={(value) => visibilityMutation.mutate({ artworkId: artwork.id, visibility: value })}
+            disabled={visibilityMutation.isPending}
+          >
+            <SelectTrigger className="w-48">
+              <SelectValue>
+                <div className="flex items-center gap-2">
+                  {artwork.visibility === 'public' ? (
+                    <>
+                      <Eye className="h-4 w-4" />
+                      Public
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="h-4 w-4" />
+                      Private
+                    </>
+                  )}
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="private">
+                <div className="flex items-center gap-2">
+                  <EyeOff className="h-4 w-4" />
+                  Private
+                </div>
+              </SelectItem>
+              <SelectItem value="public">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Public
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            {artwork.visibility === 'public' 
+              ? 'This artwork is visible in the public gallery' 
+              : 'This artwork is only visible to you'
+            }
+          </p>
         </div>
         
         {/* AI-Generated Tags */}
