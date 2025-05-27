@@ -29,7 +29,7 @@ export default function Catalog() {
   const [showAIAssistant, setShowAIAssistant] = useState(false);
   const [showUploadTest, setShowUploadTest] = useState(false);
   const { data: artworks } = useQuery<Artwork[]>({
-    queryKey: ['/api/artworks/recent'],
+    queryKey: ["/api/artworks/recent"],
   });
 
   // Auto-select artwork when data loads or changes
@@ -37,17 +37,22 @@ export default function Catalog() {
     if (artworks && artworks.length > 0) {
       // Clear selection if the selected artwork no longer exists
       if (selectedArtwork) {
-        const stillExists = artworks.find(art => art.id === selectedArtwork.id);
+        const stillExists = artworks.find(
+          (art) => art.id === selectedArtwork.id,
+        );
         if (!stillExists) {
           setSelectedArtwork(null);
         }
       }
-      
+
       // Auto-select newest artwork if none selected
       if (!selectedArtwork) {
         // Prioritize user uploads over sample artwork, and get the newest
-        const userArtworks = artworks.filter(art => art.artist !== 'Vincent van Gogh');
-        const newestArtwork = userArtworks.length > 0 ? userArtworks[0] : artworks[0];
+        const userArtworks = artworks.filter(
+          (art) => art.artist !== "Vincent van Gogh",
+        );
+        const newestArtwork =
+          userArtworks.length > 0 ? userArtworks[0] : artworks[0];
         setSelectedArtwork(newestArtwork);
       }
     }
@@ -73,7 +78,7 @@ export default function Catalog() {
   };
 
   const handleViewAllCatalog = () => {
-    setLocation('/gallery');
+    setLocation("/gallery");
   };
 
   const handleOpenAssistant = () => {
@@ -83,7 +88,7 @@ export default function Catalog() {
   return (
     <div className="min-h-screen bg-background">
       <NavigationHeader />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Top Section - Upload, Actions & Selected Artwork */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -115,14 +120,6 @@ export default function Catalog() {
 
         {/* Floating Buttons */}
         <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
-          <Button
-            size="lg"
-            variant="outline"
-            className="rounded-full h-14 w-14 shadow-lg"
-            onClick={() => setShowUploadTest(true)}
-          >
-            <TestTube className="h-6 w-6" />
-          </Button>
           <Button
             size="lg"
             className="rounded-full h-14 w-14 shadow-lg"
