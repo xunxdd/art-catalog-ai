@@ -7,14 +7,40 @@ import { useQuery } from "@tanstack/react-query";
 import { formatPrice, getImageUrl } from "@/lib/utils";
 import { Link } from "wouter";
 import { SimpleNav } from "@/components/simple-nav";
+import { ArtworkActions } from "@/components/artwork-actions";
+import { ArtworkViewer } from "@/components/artwork-viewer";
 import type { Artwork } from "@shared/schema";
 
 export default function LandingPage() {
+  const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+
   const { data: featuredArtworks } = useQuery<Artwork[]>({
     queryKey: ['/api/artworks/recent'],
   });
 
   const recentArtworks = featuredArtworks?.slice(0, 6) || [];
+
+  const handleExpand = (artwork: Artwork) => {
+    setSelectedArtwork(artwork);
+    setViewerOpen(true);
+  };
+
+  const handleFavorite = (artwork: Artwork) => {
+    // TODO: Implement favorites functionality
+    console.log('Toggle favorite for:', artwork.title);
+  };
+
+  const handleNavigateViewer = (direction: 'prev' | 'next') => {
+    if (!selectedArtwork) return;
+    
+    const currentIndex = recentArtworks.findIndex(a => a.id === selectedArtwork.id);
+    let newIndex = direction === 'prev' ? currentIndex - 1 : currentIndex + 1;
+    
+    if (newIndex >= 0 && newIndex < recentArtworks.length) {
+      setSelectedArtwork(recentArtworks[newIndex]);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -86,12 +112,12 @@ export default function LandingPage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {recentArtworks.map((artwork) => (
-                <Card key={artwork.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
+                <Card key={artwork.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="aspect-square overflow-hidden">
                     <img
                       src={getImageUrl(artwork.thumbnailUrl || artwork.imageUrl)}
                       alt={artwork.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                   </div>
                   <CardContent className="p-4">
@@ -99,15 +125,22 @@ export default function LandingPage() {
                     {artwork.artist && (
                       <p className="text-sm text-muted-foreground mb-2">by {artwork.artist}</p>
                     )}
-                    <div className="flex justify-between items-center">
-                      <div className="text-lg font-bold text-green-600">
-                        {artwork.suggestedPrice ? formatPrice(artwork.suggestedPrice) : 'Analyzing...'}
-                      </div>
-                      <Badge variant={artwork.aiAnalysisComplete ? "default" : "secondary"} className="text-xs">
-                        {artwork.aiAnalysisComplete ? 'Analyzed' : 'Processing'}
-                      </Badge>
+                    <div className="text-lg font-bold text-green-600">
+                      {artwork.suggestedPrice ? formatPrice(artwork.suggestedPrice) : 'Analyzing...'}
                     </div>
                   </CardContent>
+                  
+                  {/* Action buttons in card footer */}
+                  <div className="px-4 pb-4 pt-0">
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1" />
+                      <ArtworkActions
+                        artwork={artwork}
+                        onExpand={handleExpand}
+                        onToggleFavorite={handleFavorite}
+                      />
+                    </div>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -245,6 +278,15 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
+
+      {/* Fullscreen artwork viewer */}
+      <ArtworkViewer
+        artwork={selectedArtwork}
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+        artworks={recentArtworks}
+        onNavigate={handleNavigateViewer}
+      />
     </div>
   );
 }
