@@ -18,6 +18,7 @@ export default function Gallery() {
 
   const { data: artworks, isLoading } = useQuery<Artwork[]>({
     queryKey: ['/api/artworks/recent'],
+    retry: false,
   });
 
   const filteredArtworks = artworks?.filter(artwork =>
