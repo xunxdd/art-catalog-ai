@@ -21,13 +21,14 @@ export default function Showroom() {
             {!isAuthenticated && (
               <div className="flex items-center space-x-2">
                 <Link href="/">
-                  <Button variant="ghost" size="sm">
-                    Home
+                  <Button variant="ghost" size="sm" className="hidden sm:flex">
+                    Back to Home
                   </Button>
                 </Link>
                 <Link href="/auth">
                   <Button size="sm">
-                    Sign Up Free
+                    <span className="hidden sm:inline">Sign Up Free</span>
+                    <span className="sm:hidden">Sign Up</span>
                   </Button>
                 </Link>
               </div>
