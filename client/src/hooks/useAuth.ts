@@ -5,13 +5,12 @@ export function useAuth() {
     queryKey: ["/api/auth/user"],
     retry: false,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
     refetchOnReconnect: false,
     refetchInterval: false,
     refetchIntervalInBackground: false,
-    staleTime: Infinity, // Never refetch automatically
+    staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes
-    enabled: false, // Disable automatic fetching
   });
 
   return {
