@@ -19,6 +19,7 @@ export const artworks = pgTable("artworks", {
   thumbnailUrl: text("thumbnail_url"),
   aiAnalysisComplete: boolean("ai_analysis_complete").default(false),
   marketplaceListed: boolean("marketplace_listed").default(false),
+  visibility: varchar("visibility").default("private"), // "private" or "public"
   analysisData: json("analysis_data"), // stores raw AI analysis results
   userId: varchar("user_id").notNull(), // Link to authenticated user
   createdAt: timestamp("created_at").defaultNow(),

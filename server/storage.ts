@@ -66,7 +66,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRecentArtworks(limit: number = 10, userId?: string): Promise<Artwork[]> {
-    const conditions = userId ? eq(artworks.userId, userId) : undefined;
+    const conditions = userId ? eq(artworks.userId, userId) : eq(artworks.visibility, 'public');
     
     return await db
       .select()
