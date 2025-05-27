@@ -42,7 +42,7 @@ export function ArtworkActions({ artwork, onExpand, onToggleFavorite, className 
         variant="ghost"
         size="icon"
         onClick={handleExpand}
-        className="h-8 w-8 hover:bg-secondary"
+        className="h-8 w-8 hover:bg-secondary/50 text-foreground hover:text-foreground"
       >
         <Expand className="h-4 w-4" />
       </Button>
@@ -50,7 +50,7 @@ export function ArtworkActions({ artwork, onExpand, onToggleFavorite, className 
         variant="ghost"
         size="icon"
         onClick={handleFavorite}
-        className="h-8 w-8 hover:bg-secondary"
+        className="h-8 w-8 hover:bg-secondary/50 text-red-500 hover:text-red-600"
       >
         <Heart className="h-4 w-4" />
       </Button>
