@@ -56,8 +56,10 @@ export default function Gallery() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Gallery</h1>
-            <p className="text-muted-foreground mt-2">Browse your complete artwork collection</p>
+            <h1 className="text-3xl font-bold">Showroom</h1>
+            <p className="text-muted-foreground mt-2">
+              {user ? "Your public artworks on display" : "Discover amazing public artworks from our community"}
+            </p>
           </div>
           
           <div className="flex items-center space-x-4">
