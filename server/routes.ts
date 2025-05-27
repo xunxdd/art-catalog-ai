@@ -92,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get recent artworks (sample data for unauthenticated users)
+  // Get recent artworks (sample data for unauthenticated users or new users)
   app.get("/api/artworks/recent", async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
@@ -107,7 +107,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      const artworks = await storage.getRecentArtworks(limit, userId);
+      let artworks = await storage.getRecentArtworks(limit, userId);
+      
+      // If authenticated user has no artworks, show sample data
+      if (userId && artworks.length === 0) {
+        artworks = await storage.getRecentArtworks(limit); // Get sample artworks without user filter
+      }
+      
       res.json(artworks);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch recent artworks" });
