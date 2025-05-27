@@ -12,6 +12,7 @@ export interface IStorage {
   getArtwork(id: number, userId?: string): Promise<Artwork | undefined>;
   getAllArtworks(): Promise<Artwork[]>; // Admin only
   getRecentArtworks(limit?: number, userId?: string): Promise<Artwork[]>;
+  getShowroomArtworks(limit?: number, userId?: string): Promise<Artwork[]>;
   getUserArtworks(userId: string): Promise<Artwork[]>;
   createArtwork(artwork: InsertArtwork): Promise<Artwork>;
   updateArtwork(id: number, updates: Partial<Artwork>, userId?: string): Promise<Artwork | undefined>;
@@ -67,6 +68,21 @@ export class DatabaseStorage implements IStorage {
 
   async getRecentArtworks(limit: number = 10, userId?: string): Promise<Artwork[]> {
     const conditions = userId ? eq(artworks.userId, userId) : eq(artworks.visibility, 'public');
+    
+    return await db
+      .select()
+      .from(artworks)
+      .where(conditions)
+      .orderBy(desc(artworks.createdAt))
+      .limit(limit);
+  }
+
+  async getShowroomArtworks(limit: number = 50, userId?: string): Promise<Artwork[]> {
+    // If user is logged in, show only their public works
+    // If not logged in, show all public works from everyone
+    const conditions = userId 
+      ? and(eq(artworks.visibility, 'public'), eq(artworks.userId, userId))
+      : eq(artworks.visibility, 'public');
     
     return await db
       .select()

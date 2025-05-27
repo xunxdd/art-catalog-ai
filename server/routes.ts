@@ -121,6 +121,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get showroom artworks (public works)
+  app.get("/api/showroom/artworks", async (req: any, res) => {
+    try {
+      let userId;
+      if (req.isAuthenticated && req.isAuthenticated()) {
+        if (req.user?.claims?.sub) {
+          userId = req.user.claims.sub;
+        } else if (req.user?.id) {
+          userId = req.user.id;
+        }
+      }
+      
+      const artworks = await storage.getShowroomArtworks(50, userId);
+      res.json(artworks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch showroom artworks" });
+    }
+  });
+
   // Get single artwork
   app.get("/api/artworks/:id", async (req, res) => {
     try {

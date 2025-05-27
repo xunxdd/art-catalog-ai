@@ -14,9 +14,11 @@ import type { Artwork } from "@shared/schema";
 export default function Gallery() {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  // Public gallery - no authentication required
+  const { user } = useAuth();
+  
+  // Showroom - shows user's public works if logged in, all public works if not
   const { data: artworks, isLoading } = useQuery<Artwork[]>({
-    queryKey: ['/api/artworks/recent'],
+    queryKey: ['/api/showroom/artworks'],
     retry: false,
   });
 
@@ -35,7 +37,7 @@ export default function Gallery() {
             <span className="font-bold text-xl">ArtCatalogAI</span>
           </Link>
           <div className="flex items-center space-x-4">
-            <h1 className="text-lg font-semibold">Public Art Gallery</h1>
+            <h1 className="text-lg font-semibold">Showroom</h1>
             <Link href="/">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
