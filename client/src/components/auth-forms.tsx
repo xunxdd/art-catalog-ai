@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { FaGoogle, FaFacebook } from "react-icons/fa";
 import { useLocation } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
+import { queryClient } from "@/lib/queryClient";
 
 interface AuthFormsProps {
   onSuccess?: () => void;
@@ -22,6 +22,7 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
     password: '',
     firstName: '',
     lastName: '',
+    username: '',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -39,7 +40,15 @@ export function AuthForms({ onSuccess }: AuthFormsProps) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(isLogin ? 
+          { email: formData.email, password: formData.password } :
+          { 
+            email: formData.email, 
+            password: formData.password,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            username: formData.username || formData.email.split('@')[0]
+          }),
       });
 
       if (!response.ok) {
