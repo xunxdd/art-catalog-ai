@@ -1,5 +1,6 @@
 import { SharedGallery } from "@/components/shared-gallery";
 import { SimpleNav } from "@/components/simple-nav";
+import { NavigationHeader } from "@/components/navigation-header";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Showroom() {
@@ -7,8 +8,8 @@ export default function Showroom() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Use shared navigation component */}
-      {!isAuthenticated && <SimpleNav />}
+      {/* Show appropriate navigation for user state */}
+      {isAuthenticated ? <NavigationHeader /> : <SimpleNav />}
 
       <SharedGallery
         title="Showroom"
