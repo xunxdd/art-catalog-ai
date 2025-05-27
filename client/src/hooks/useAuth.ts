@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 export function useAuth() {
-  const { data: user, isLoading } = useQuery({
+  const { data: user, isLoading, error } = useQuery({
     queryKey: ["/api/auth/user"],
     retry: false,
     refetchOnWindowFocus: false,
@@ -9,8 +9,8 @@ export function useAuth() {
     refetchOnReconnect: false,
     refetchInterval: false,
     refetchIntervalInBackground: false,
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    gcTime: 10 * 60 * 1000,
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 
   return {

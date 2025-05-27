@@ -8,6 +8,7 @@ import { AuthForms } from "@/components/auth-forms";
 import LandingPage from "@/pages/landing-page";
 import Catalog from "@/pages/catalog";
 import Gallery from "@/pages/gallery";
+import Showroom from "@/pages/showroom";
 import Analytics from "@/pages/analytics";
 import Marketplace from "@/pages/marketplace";
 import AdminDashboard from "@/pages/admin-dashboard";
@@ -37,6 +38,7 @@ function Router() {
           <AuthForms />
         </Route>
         <Route path="/gallery" component={Gallery} />
+        <Route path="/showroom" component={Showroom} />
         <Route component={LandingPage} />
       </Switch>
     );
