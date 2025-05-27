@@ -145,8 +145,8 @@ export default function Gallery() {
                         <span className="text-green-600 font-semibold">
                           {artwork.suggestedPrice ? formatPrice(artwork.suggestedPrice) : 'Analyzing...'}
                         </span>
-                        <Badge className={getStatusColor(artwork.aiAnalysisComplete ? 'complete' : 'analyzing')}>
-                          {artwork.aiAnalysisComplete ? 'Analyzed' : 'Processing'}
+                        <Badge className={getStatusColor(artwork.aiAnalysisComplete === true ? 'complete' : 'analyzing')}>
+                          {artwork.aiAnalysisComplete === true ? 'Ready' : 'Processing'}
                         </Badge>
                       </div>
                     </CardContent>
@@ -175,8 +175,8 @@ export default function Gallery() {
                         <div className="text-green-600 font-semibold">
                           {artwork.suggestedPrice ? formatPrice(artwork.suggestedPrice) : 'Analyzing...'}
                         </div>
-                        <Badge className={getStatusColor(artwork.aiAnalysisComplete ? 'complete' : 'analyzing')}>
-                          {artwork.aiAnalysisComplete ? 'Analyzed' : 'Processing'}
+                        <Badge className={getStatusColor(artwork.aiAnalysisComplete === true ? 'complete' : 'analyzing')}>
+                          {artwork.aiAnalysisComplete === true ? 'Ready' : 'Processing'}
                         </Badge>
                       </div>
                     </div>

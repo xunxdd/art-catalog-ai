@@ -128,8 +128,8 @@ export function RecentCatalog({ onSelectArtwork, onViewAll }: RecentCatalogProps
                 <span className="text-green-600 font-semibold">
                   {artwork.suggestedPrice ? formatPrice(artwork.suggestedPrice) : 'Analyzing...'}
                 </span>
-                <Badge className={getStatusColor(artwork.aiAnalysisComplete ? 'completed' : 'processing')}>
-                  {artwork.aiAnalysisComplete ? 'Ready' : 'Processing'}
+                <Badge className={getStatusColor(artwork.aiAnalysisComplete === true ? 'completed' : 'processing')}>
+                  {artwork.aiAnalysisComplete === true ? 'Ready' : 'Processing'}
                 </Badge>
               </div>
             </Link>
