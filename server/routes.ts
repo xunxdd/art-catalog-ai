@@ -109,9 +109,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let artworks = await storage.getRecentArtworks(limit, userId);
       
-      // If authenticated user has no artworks, show sample data
+      // If authenticated user has no artworks, they see an empty collection
+      // This ensures privacy - users only see their own work
       if (userId && artworks.length === 0) {
-        artworks = await storage.getRecentArtworks(limit); // Get sample artworks without user filter
+        artworks = []; // Authenticated users with no artworks see empty collection
       }
       
       res.json(artworks);
