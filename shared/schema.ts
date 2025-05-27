@@ -37,6 +37,16 @@ export const insertArtworkSchema = createInsertSchema(artworks).omit({
 export type InsertArtwork = z.infer<typeof insertArtworkSchema>;
 export type Artwork = typeof artworks.$inferSelect;
 
+// Favorites table to track user likes
+export const favorites = pgTable("favorites", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  artworkId: integer("artwork_id").notNull().references(() => artworks.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export type Favorite = typeof favorites.$inferSelect;
+
 // Session storage table for Replit Auth
 export const sessions = pgTable(
   "sessions",
