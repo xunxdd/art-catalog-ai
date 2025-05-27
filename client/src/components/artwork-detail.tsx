@@ -305,6 +305,50 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
             <div className="text-sm text-muted-foreground">AI Suggested Price</div>
           </div>
         </div>
+
+        {/* Visibility Control */}
+        <div className="mb-6">
+          <Label htmlFor="visibility" className="text-sm font-medium mb-2 block">
+            Visibility
+          </Label>
+          <Select 
+            value={artwork.visibility || 'public'} 
+            onValueChange={(value) => visibilityMutation.mutate({ artworkId: artwork.id, visibility: value })}
+            disabled={visibilityMutation.isPending}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue>
+                <div className="flex items-center gap-2">
+                  {artwork.visibility === 'public' ? (
+                    <>
+                      <Eye className="h-4 w-4" />
+                      Public - Visible in gallery
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="h-4 w-4" />
+                      Private - Only visible to you
+                    </>
+                  )}
+                </div>
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="private">
+                <div className="flex items-center gap-2">
+                  <EyeOff className="h-4 w-4" />
+                  Private - Only visible to you
+                </div>
+              </SelectItem>
+              <SelectItem value="public">
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  Public - Visible in gallery
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         
         {/* Artwork Specifications */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -328,55 +372,7 @@ export function ArtworkDetail({ artwork, onEdit, onShare, onCreateListing, onDel
           </div>
         </div>
 
-        {/* Visibility Control */}
-        <div className="mb-6">
-          <Label htmlFor="visibility" className="text-sm font-medium mb-2 block">
-            Visibility
-          </Label>
-          <Select 
-            value={artwork.visibility || 'private'} 
-            onValueChange={(value) => visibilityMutation.mutate({ artworkId: artwork.id, visibility: value })}
-            disabled={visibilityMutation.isPending}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue>
-                <div className="flex items-center gap-2">
-                  {artwork.visibility === 'public' ? (
-                    <>
-                      <Eye className="h-4 w-4" />
-                      Public
-                    </>
-                  ) : (
-                    <>
-                      <EyeOff className="h-4 w-4" />
-                      Private
-                    </>
-                  )}
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="private">
-                <div className="flex items-center gap-2">
-                  <EyeOff className="h-4 w-4" />
-                  Private
-                </div>
-              </SelectItem>
-              <SelectItem value="public">
-                <div className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  Public
-                </div>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground mt-1">
-            {artwork.visibility === 'public' 
-              ? 'This artwork is visible in the public gallery' 
-              : 'This artwork is only visible to you'
-            }
-          </p>
-        </div>
+
         
         {/* AI-Generated Tags */}
         {styleThemeTags.length > 0 && (
