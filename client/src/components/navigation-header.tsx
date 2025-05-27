@@ -48,62 +48,87 @@ export function NavigationHeader() {
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col space-y-4 mt-6">
-                  <Link 
-                    href="/" 
-                    className={`text-left py-2 px-3 rounded-md transition-colors ${
-                      isActive('/') 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Catalog
-                  </Link>
-                  <Link 
-                    href="/gallery" 
-                    className={`text-left py-2 px-3 rounded-md transition-colors ${
-                      isActive('/gallery') 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Gallery
-                  </Link>
-                  <Link 
-                    href="/analytics" 
-                    className={`text-left py-2 px-3 rounded-md transition-colors ${
-                      isActive('/analytics') 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Analytics
-                  </Link>
-                  <Link 
-                    href="/marketplace" 
-                    className={`text-left py-2 px-3 rounded-md transition-colors ${
-                      isActive('/marketplace') 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Marketplace
-                  </Link>
-                  {isAdmin && (
-                    <Link 
-                      href="/admin" 
-                      className={`text-left py-2 px-3 rounded-md transition-colors ${
-                        isActive('/admin') 
-                          ? 'bg-primary text-primary-foreground' 
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                      }`}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Admin
-                    </Link>
+                  {isAuthenticated ? (
+                    <>
+                      <Link 
+                        href="/" 
+                        className={`text-left py-2 px-3 rounded-md transition-colors ${
+                          isActive('/') 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Catalog
+                      </Link>
+                      <Link 
+                        href="/gallery" 
+                        className={`text-left py-2 px-3 rounded-md transition-colors ${
+                          isActive('/gallery') 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Gallery
+                      </Link>
+                      <Link 
+                        href="/analytics" 
+                        className={`text-left py-2 px-3 rounded-md transition-colors ${
+                          isActive('/analytics') 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Analytics
+                      </Link>
+                      <Link 
+                        href="/marketplace" 
+                        className={`text-left py-2 px-3 rounded-md transition-colors ${
+                          isActive('/marketplace') 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Marketplace
+                      </Link>
+                      {isAdmin && (
+                        <Link 
+                          href="/admin" 
+                          className={`text-left py-2 px-3 rounded-md transition-colors ${
+                            isActive('/admin') 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          }`}
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          Admin
+                        </Link>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <Link 
+                        href="/showroom" 
+                        className={`text-left py-2 px-3 rounded-md transition-colors ${
+                          isActive('/showroom') 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                        }`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Browse Artworks
+                      </Link>
+                      <Link 
+                        href="/auth" 
+                        className={`text-left py-2 px-3 rounded-md transition-colors bg-primary text-primary-foreground hover:bg-primary/90`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Sign Up Free
+                      </Link>
+                    </>
                   )}
                 </nav>
               </SheetContent>
@@ -112,45 +137,47 @@ export function NavigationHeader() {
             <Link href="/" className="flex items-center">
               <Camera className="text-primary h-8 w-8" />
             </Link>
-            <nav className="hidden md:flex space-x-8 ml-8">
-              <Link href="/" className={`font-medium transition-colors ${
-                isActive('/') 
-                  ? 'text-primary border-b-2 border-primary pb-1' 
-                  : 'text-muted-foreground hover:text-primary'
-              }`}>
-                Catalog
-              </Link>
-              <Link href="/gallery" className={`font-medium transition-colors ${
-                isActive('/gallery') 
-                  ? 'text-primary border-b-2 border-primary pb-1' 
-                  : 'text-muted-foreground hover:text-primary'
-              }`}>
-                Gallery
-              </Link>
-              <Link href="/analytics" className={`font-medium transition-colors ${
-                isActive('/analytics') 
-                  ? 'text-primary border-b-2 border-primary pb-1' 
-                  : 'text-muted-foreground hover:text-primary'
-              }`}>
-                Analytics
-              </Link>
-              <Link href="/marketplace" className={`font-medium transition-colors ${
-                isActive('/marketplace') 
-                  ? 'text-primary border-b-2 border-primary pb-1' 
-                  : 'text-muted-foreground hover:text-primary'
-              }`}>
-                Marketplace
-              </Link>
-              {isAdmin && (
-                <Link href="/admin" className={`font-medium transition-colors ${
-                  isActive('/admin') 
+            {isAuthenticated && (
+              <nav className="hidden md:flex space-x-8 ml-8">
+                <Link href="/" className={`font-medium transition-colors ${
+                  isActive('/') 
                     ? 'text-primary border-b-2 border-primary pb-1' 
                     : 'text-muted-foreground hover:text-primary'
                 }`}>
-                  Admin
+                  Catalog
                 </Link>
-              )}
-            </nav>
+                <Link href="/gallery" className={`font-medium transition-colors ${
+                  isActive('/gallery') 
+                    ? 'text-primary border-b-2 border-primary pb-1' 
+                    : 'text-muted-foreground hover:text-primary'
+                }`}>
+                  Gallery
+                </Link>
+                <Link href="/analytics" className={`font-medium transition-colors ${
+                  isActive('/analytics') 
+                    ? 'text-primary border-b-2 border-primary pb-1' 
+                    : 'text-muted-foreground hover:text-primary'
+                }`}>
+                  Analytics
+                </Link>
+                <Link href="/marketplace" className={`font-medium transition-colors ${
+                  isActive('/marketplace') 
+                    ? 'text-primary border-b-2 border-primary pb-1' 
+                    : 'text-muted-foreground hover:text-primary'
+                }`}>
+                  Marketplace
+                </Link>
+                {isAdmin && (
+                  <Link href="/admin" className={`font-medium transition-colors ${
+                    isActive('/admin') 
+                      ? 'text-primary border-b-2 border-primary pb-1' 
+                      : 'text-muted-foreground hover:text-primary'
+                  }`}>
+                    Admin
+                  </Link>
+                )}
+              </nav>
+            )}
           </div>
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
