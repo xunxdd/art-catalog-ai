@@ -20,8 +20,8 @@ export default function Showroom() {
           {!isAuthenticated && (
             <Link href="/auth">
               <Button size="sm">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Sign Up
+                <LogIn className="mr-2 h-4 w-4" />
+                Log In
               </Button>
             </Link>
           )}
