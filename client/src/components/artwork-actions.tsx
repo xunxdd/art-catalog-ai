@@ -16,13 +16,19 @@ export function ArtworkActions({ artwork, onExpand, onToggleFavorite, className 
   const { isAuthenticated } = useAuth();
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
-  const handleExpand = () => {
+  const handleExpand = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     if (onExpand) {
       onExpand(artwork);
     }
   };
 
-  const handleFavorite = () => {
+  const handleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Heart clicked!', { isAuthenticated, artwork: artwork.title });
+    
     if (!isAuthenticated) {
       setLoginDialogOpen(true);
       return;
