@@ -23,7 +23,7 @@ import { useState } from "react";
 
 export function NavigationHeader() {
   const [location] = useLocation();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location === path;
@@ -153,75 +153,92 @@ export function NavigationHeader() {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
-              <Search className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <Bell className="h-4 w-4" />
-            </Button>
-            
-            {/* User Profile Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.profileImageUrl || ''} alt={user?.firstName || 'User'} />
-                    <AvatarFallback>
-                      {user?.firstName?.[0] || user?.email?.[0] || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+            {isAuthenticated ? (
+              <>
+                <Button variant="ghost" size="icon">
+                  <Search className="h-4 w-4" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {user?.firstName && user?.lastName 
-                        ? `${user.firstName} ${user.lastName}` 
-                        : user?.email || 'User'}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email}
-                    </p>
+                <Button variant="ghost" size="icon">
+                  <Bell className="h-4 w-4" />
+                </Button>
+                
+                {/* User Profile Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user?.profileImageUrl || ''} alt={user?.firstName || 'User'} />
+                        <AvatarFallback>
+                          {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {user?.firstName && user?.lastName 
+                            ? `${user.firstName} ${user.lastName}` 
+                            : user?.email || 'User'}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user?.email}
+                        </p>
+                        {isAdmin && (
+                          <Badge variant="secondary" className="w-fit text-xs">
+                            <Shield className="w-3 h-3 mr-1" />
+                            Admin
+                          </Badge>
+                        )}
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/account">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Account Settings</span>
+                      </Link>
+                    </DropdownMenuItem>
                     {isAdmin && (
-                      <Badge variant="secondary" className="w-fit text-xs">
-                        <Shield className="w-3 h-3 mr-1" />
-                        Admin
-                      </Badge>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin">
+                          <Shield className="mr-2 h-4 w-4" />
+                          <span>Admin Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
                     )}
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/account">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Account Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-                {isAdmin && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin">
-                      <Shield className="mr-2 h-4 w-4" />
-                      <span>Admin Dashboard</span>
-                    </Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => {
-                    fetch('/api/auth/logout', { 
-                      method: 'POST', 
-                      credentials: 'include' 
-                    })
-                    .then(() => window.location.href = '/')
-                    .catch(() => window.location.href = '/');
-                  }}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        fetch('/api/auth/logout', { 
+                          method: 'POST', 
+                          credentials: 'include' 
+                        })
+                        .then(() => window.location.href = '/')
+                        .catch(() => window.location.href = '/');
+                      }}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link href="/showroom">
+                  <Button variant="ghost" size="sm">
+                    Browse Artworks
+                  </Button>
+                </Link>
+                <Link href="/auth">
+                  <Button size="sm">
+                    Sign Up Free
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

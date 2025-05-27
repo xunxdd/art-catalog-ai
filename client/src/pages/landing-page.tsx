@@ -132,7 +132,7 @@ export default function LandingPage() {
             </div>
             
             <div className="text-center mt-8">
-              <Link href="/gallery">
+              <Link href="/showroom">
                 <Button variant="outline" size="lg">
                   View All Artworks
                 </Button>

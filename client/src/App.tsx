@@ -19,30 +19,36 @@ import NotFound from "@/pages/not-found";
 function Router() {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your art collection...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <Switch>
-        <Route path="/" component={LandingPage} />
-        <Route path="/auth">
-          <AuthForms />
+  return (
+    <Switch>
+      <Route path="/" component={LandingPage} />
+      <Route path="/auth">
+        <AuthForms />
+      </Route>
+      <Route path="/showroom" component={Showroom} />
+      {isAuthenticated ? (
+        <>
+          <Route path="/gallery" component={Gallery} />
+          <Route path="/catalog" component={Catalog} />
+          <Route path="/analytics" component={Analytics} />
+          <Route path="/marketplace" component={Marketplace} />
+          <Route path="/artwork/:id" component={ArtworkDetailPage} />
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/settings" component={AccountSettings} />
+        </>
+      ) : (
+        <Route path="/gallery">
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-xl font-semibold mb-4">Please log in to view your gallery</p>
+              <a href="/auth" className="text-primary hover:underline">Go to Login</a>
+            </div>
+          </div>
         </Route>
-        <Route path="/gallery" component={Gallery} />
-        <Route path="/showroom" component={Showroom} />
-        <Route component={LandingPage} />
-      </Switch>
-    );
-  }
+      )}
+      <Route component={LandingPage} />
+    </Switch>
+  );
 
   return (
     <Switch>
