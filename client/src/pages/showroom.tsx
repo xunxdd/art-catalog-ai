@@ -18,17 +18,17 @@ export default function Showroom() {
           </Link>
           
           {!isAuthenticated && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-1">
               <Link href="/auth">
-                <Button variant="ghost" size="sm">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Log In
+                <Button variant="ghost" className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm">
+                  <LogIn className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline ml-1">Log In</span>
                 </Button>
               </Link>
               <Link href="/auth">
-                <Button size="sm">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Sign Up
+                <Button className="h-8 px-2 text-xs sm:h-9 sm:px-3 sm:text-sm">
+                  <UserPlus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline ml-1">Sign Up</span>
                 </Button>
               </Link>
             </div>
