@@ -1,0 +1,59 @@
+import { Button } from "@/components/ui/button";
+import { Expand, Heart } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import type { Artwork } from "@shared/schema";
+
+interface ArtworkActionsProps {
+  artwork: Artwork;
+  onExpand?: (artwork: Artwork) => void;
+  onToggleFavorite?: (artwork: Artwork) => void;
+  className?: string;
+}
+
+export function ArtworkActions({ artwork, onExpand, onToggleFavorite, className = "" }: ArtworkActionsProps) {
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
+
+  const handleExpand = () => {
+    if (onExpand) {
+      onExpand(artwork);
+    }
+  };
+
+  const handleFavorite = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to add artworks to your favorites.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (onToggleFavorite) {
+      onToggleFavorite(artwork);
+    }
+  };
+
+  return (
+    <div className={`flex items-center gap-1 ${className}`}>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleExpand}
+        className="h-8 w-8 hover:bg-secondary"
+      >
+        <Expand className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleFavorite}
+        className="h-8 w-8 hover:bg-secondary"
+      >
+        <Heart className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}

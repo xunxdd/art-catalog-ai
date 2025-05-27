@@ -7,6 +7,8 @@ import { Search, Filter, Grid, List } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatPrice, getStatusColor, getImageUrl } from "@/lib/utils";
 import { Link } from "wouter";
+import { ArtworkActions } from "@/components/artwork-actions";
+import { ArtworkViewer } from "@/components/artwork-viewer";
 import type { Artwork } from "@shared/schema";
 
 interface SharedGalleryProps {
@@ -26,6 +28,8 @@ export function SharedGallery({
 }: SharedGalleryProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
   
   const { data: artworks, isLoading } = useQuery<Artwork[]>({
     queryKey: [queryKey],
@@ -38,6 +42,27 @@ export function SharedGallery({
     artwork.artist?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     artwork.medium?.toLowerCase().includes(searchTerm.toLowerCase())
   ) || [];
+
+  const handleExpand = (artwork: Artwork) => {
+    setSelectedArtwork(artwork);
+    setViewerOpen(true);
+  };
+
+  const handleFavorite = (artwork: Artwork) => {
+    // TODO: Implement favorites functionality
+    console.log('Toggle favorite for:', artwork.title);
+  };
+
+  const handleNavigateViewer = (direction: 'prev' | 'next') => {
+    if (!selectedArtwork) return;
+    
+    const currentIndex = filteredArtworks.findIndex(a => a.id === selectedArtwork.id);
+    let newIndex = direction === 'prev' ? currentIndex - 1 : currentIndex + 1;
+    
+    if (newIndex >= 0 && newIndex < filteredArtworks.length) {
+      setSelectedArtwork(filteredArtworks[newIndex]);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -115,17 +140,17 @@ export function SharedGallery({
           : "space-y-4"
         }>
           {filteredArtworks.map((artwork) => (
-            <Link 
-              key={artwork.id} 
-              href={`/artwork/${artwork.id}`}
-              onClick={(e) => {
-                if (onSelectArtwork) {
-                  e.preventDefault();
-                  onSelectArtwork(artwork);
-                }
-              }}
-            >
-              <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+            <Card key={artwork.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <Link 
+                href={`/artwork/${artwork.id}`}
+                onClick={(e) => {
+                  if (onSelectArtwork) {
+                    e.preventDefault();
+                    onSelectArtwork(artwork);
+                  }
+                }}
+                className="cursor-pointer"
+              >
                 <div className="aspect-square overflow-hidden">
                   <img
                     src={getImageUrl(artwork.imageUrl)}
@@ -155,11 +180,32 @@ export function SharedGallery({
                     </p>
                   )}
                 </CardContent>
-              </Card>
-            </Link>
+              </Link>
+              
+              {/* Action buttons in card footer */}
+              <div className="px-4 pb-4 pt-0">
+                <div className="flex justify-between items-center">
+                  <div className="flex-1" />
+                  <ArtworkActions
+                    artwork={artwork}
+                    onExpand={handleExpand}
+                    onToggleFavorite={handleFavorite}
+                  />
+                </div>
+              </div>
+            </Card>
           ))}
         </div>
       )}
+
+      {/* Fullscreen artwork viewer */}
+      <ArtworkViewer
+        artwork={selectedArtwork}
+        open={viewerOpen}
+        onOpenChange={setViewerOpen}
+        artworks={filteredArtworks}
+        onNavigate={handleNavigateViewer}
+      />
     </div>
   );
 }
