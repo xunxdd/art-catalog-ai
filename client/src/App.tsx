@@ -21,9 +21,7 @@ function Router() {
 
   return (
     <Switch>
-      <Route path="/">
-        {isAuthenticated ? <Catalog /> : <LandingPage />}
-      </Route>
+      <Route path="/" component={LandingPage} />
       <Route path="/auth">
         <AuthForms />
       </Route>
